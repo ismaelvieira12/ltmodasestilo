@@ -1,0 +1,11 @@
+Fotos e vídeos do site da ltmodasestilo.
+
+Fotos: .jpeg ou .jpg, em pé, de preferência 3:4 (1200 x 1600), todas no mesmo estúdio.
+Vídeos: .mp4, em pé (9:16), até uns 20 segundos e uns 4 MB.
+
+Depois de colocar arquivos novos:
+1. Aponte para eles em dados/produtos.js (campos fotos e video da peça).
+2. Rode "npm run fotos" para gerar as miniaturas em img/640/ (não edite essa pasta).
+3. Rode "npm run dev" para conferir o site.
+
+O guia completo está no README.md, Passo 4.

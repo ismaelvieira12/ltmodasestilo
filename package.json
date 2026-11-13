@@ -1,0 +1,10 @@
+{
+  "name": "campanha",
+  "private": true,
+  "scripts": {
+    "build": "node build.js",
+    "dev": "node build.js && npx --yes serve dist -l 3456",
+    "preview": "npx --yes serve dist -l 3456",
+    "fotos": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/miniaturas.ps1"
+  }
+}

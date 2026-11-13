@@ -1,0 +1,2897 @@
+/* ============================================================
+   CATÁLOGO: folha de estilo única
+   Direção "Referência" (DESIGN.md): loja de moda com fundo creme, painéis bege, cartões
+   brancos, tinta quase preta nos botões e no rodapé, títulos numa serifa de alto contraste
+   (DM Serif Display) com rótulos pequenos em caixa alta, e um único acento verde (só WhatsApp).
+   Cantos de 4px, 10px no cartão branco, 50% só em círculos.
+
+   Blocos, nesta ordem:
+     1. Tokens            7. Home                13. Página da peça
+     2. Base             7b. Vídeos              14. Barra fixa do CTA
+     3. Utilidades        8. Card e coleção      15. Páginas de leitura (trocas, 404)
+     4. Botões e links    9. Sobre               16. Rodapé e painel de favoritos
+     5. Barra e topo     10. Depoimentos         17. Movimento
+     6. Menu do celular  11. Guia de medidas     18. Reduced motion e impressão
+                         12. Dúvidas e trocas
+
+   Z-index: topo 20, cartão das categorias 2, barra fixa 30; dialogs usam a top layer nativa.
+   Breakpoints (mobile-first): 640 sm, 768 md, 1024 lg, 1280 xl.
+   Os hex abaixo são os padrões; o build sobrescreve em <style>:root{...}</style>
+   quando dados/config.js > identidade tiver cores ou fontes preenchidas.
+   Sem color-mix() nem cor relativa: a WebView do Instagram em Android não suporta.
+   ============================================================ */
+
+/* ---------- 1. Tokens ---------- */
+
+:root {
+  color-scheme: light;
+
+  /* Padrões do modelo (os mesmos da ltmodasestilo); o build injeta os valores da identidade. */
+  --cor-fundo: #f6f4f0;
+  --cor-superficie: #f2f0eb;
+  --cor-painel: #efebe5;
+  --cor-cartao: #fdfdfc;
+  --cor-linha: #dbd9d5;
+  --cor-borda: #868482;
+  --cor-tinta: #151413;
+  --cor-tinta-suave: #595755;
+  --cor-acento: #1e6b43;
+  --cor-acento-forte: #1c5a39;
+  --cor-texto-botao: #f6f4f0;
+  --cor-scrim: rgba(21, 20, 19, 0.6);
+  --sombra-fixa: 0 -8px 24px rgba(21, 20, 19, 0.06);
+  --sombra-cartao: 0 12px 40px rgba(21, 20, 19, 0.08);
+  /* Superfície preta (barra de topo e rodapé): a própria tinta. */
+  --cor-escuro: #151413;
+  --cor-escuro-linha: #42413f;
+  --cor-sobre-escuro: #f6f4f0;
+  --cor-sobre-escuro-suave: #aeaca9;
+  --cor-veu-forte: rgba(21, 20, 19, 0.82);
+  --cor-veu-zero: rgba(21, 20, 19, 0);
+
+  --fonte-titulo: "DM Serif Display", "Titulo Fallback", Georgia, "Times New Roman", serif;
+  --fonte-texto: "Instrument Sans", Arial, "Helvetica Neue", Helvetica, sans-serif;
+  /* Nome da marca (wordmark, @ do Instagram, o nome dentro de textos): face com "l" de cauda. */
+  --fonte-marca: "IBM Plex Sans", Arial, "Helvetica Neue", Helvetica, sans-serif;
+
+  --esp-1: 4px;
+  --esp-2: 8px;
+  --esp-3: 12px;
+  --esp-4: 16px;
+  --esp-5: 20px;
+  --esp-6: 24px;
+  --esp-7: 32px;
+  --esp-8: 40px;
+  --esp-9: 48px;
+  --esp-10: 64px;
+  --esp-11: 96px;
+
+  /* Cantos: 4px em botões, campos, fotos e painéis; 10px no cartão branco das categorias e nos
+     cartões de tabela; 50% só em círculos (categorias, play, coração, contador). */
+  --raio-controle: 4px;
+  --raio-superficie: 4px;
+  --raio-cartao: 10px;
+
+  --container: 1280px;
+  --gutter: 16px;
+  --topo-altura: 64px;
+  /* Entre seções: 48px no celular e 64px no desktop (a referência é mais densa que a direção anterior). */
+  --secao: var(--esp-9);
+  --h2-para-conteudo: var(--esp-6);
+
+  --suave: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Fallback com size-adjust para a troca de fonte não mudar o número de linhas do h1. */
+@font-face {
+  font-family: "Titulo Fallback";
+  src: local("Georgia"), local("Times New Roman");
+  size-adjust: 100%;
+}
+
+@media (min-width: 640px) {
+  :root { --gutter: 24px; }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --topo-altura: 76px;
+    --secao: var(--esp-10);
+    --h2-para-conteudo: var(--esp-8);
+  }
+}
+
+/* ---------- 2. Base ---------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--cor-fundo);
+  color: var(--cor-tinta);
+  font-family: var(--fonte-texto);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* hidden vence display de componentes (.btn é inline-flex e anularia o atributo). */
+[hidden] { display: none !important; }
+
+/* Sem JS (a classe js vem de um script de uma linha no <head>): some o que depende de script.
+   O botão Menu abre um dialog e a dica de tamanho promete atualizar a mensagem. */
+html:not(.js) [data-abrir-menu],
+html:not(.js) [data-abrir-busca],
+html:not(.js) [data-dica-tamanho] { display: none; }
+
+/* Nome da marca dentro de qualquer texto: mesma face do wordmark, para o "l" não virar "I". */
+.marca-nome {
+  font-family: var(--fonte-marca);
+  letter-spacing: 0;
+}
+/* Nos títulos serifados o nome segue a serifa: nela o "l" tem serifa só de um lado e não se
+   confunde com o "I"; a face da marca no meio do título destoava. */
+h1 .marca-nome,
+h2 .marca-nome { font-family: inherit; letter-spacing: inherit; }
+
+h1, h2, h3, p, ul, ol, dl, dd, figure, fieldset, blockquote { margin: 0; }
+ul, ol { padding: 0; }
+fieldset { padding: 0; border: 0; min-width: 0; }
+img { display: block; max-width: 100%; height: auto; }
+button { font: inherit; color: inherit; }
+a { color: inherit; }
+s { text-decoration: line-through; }
+b, strong { font-weight: 600; }
+
+/* Títulos na serifa de alto contraste, sempre no peso 400 (o único da DM Serif Display:
+   pedir 500 faria o navegador engrossar a letra artificialmente). */
+h1, h2 {
+  font-family: var(--fonte-titulo);
+  font-weight: 400;
+  text-wrap: balance;
+}
+
+h2 {
+  font-size: clamp(1.875rem, 1.35rem + 1.7vw, 2.75rem);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-family: var(--fonte-texto);
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+p { max-width: 62ch; }
+
+:focus-visible {
+  outline: 2px solid var(--cor-tinta);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--cor-tinta);
+  color: var(--cor-fundo);
+}
+
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+
+main { display: block; }
+
+/* Cada seção ancorada para por baixo do topo fixo. */
+[id], [data-galeria] { scroll-margin-top: calc(var(--topo-altura) + var(--esp-4)); }
+
+.secao { margin-top: var(--secao); }
+.secao > .container > h2 { margin-bottom: var(--h2-para-conteudo); }
+
+@media (min-width: 1024px) {
+  body { font-size: 17px; }
+  h3 { font-size: 18px; }
+}
+
+/* ---------- 3. Utilidades ---------- */
+
+/* Visualmente oculto, lido por leitores de tela. */
+.vo {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.pular {
+  position: absolute;
+  left: var(--gutter);
+  top: -100px;
+  z-index: 40;
+  padding: 12px 16px;
+  background: var(--cor-tinta);
+  color: var(--cor-fundo);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: var(--raio-controle);
+}
+.pular:focus { top: var(--esp-2); }
+
+/* Fotos: fundo em superfície enquanto carregam; placeholder quando falham. */
+[data-foto] {
+  position: relative;
+  background: var(--cor-superficie);
+  overflow: hidden;
+}
+.foto--vazia img { visibility: hidden; }
+.foto--vazia::after {
+  content: "Foto em breve";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--cor-tinta-suave);
+}
+
+/* Lista com marcador em hífen, sem bullet nativo. */
+.lista-hifen {
+  list-style: none;
+  font-size: 15px;
+}
+.lista-hifen li {
+  position: relative;
+  padding-left: 16px;
+}
+.lista-hifen li::before {
+  content: "-";
+  position: absolute;
+  left: 0;
+}
+.lista-hifen li + li { margin-top: var(--esp-2); }
+
+/* Indicador de segmentos (galeria, depoimentos). */
+.segmentos {
+  display: flex;
+  gap: 4px;
+  height: 2px;
+  margin-top: var(--esp-4);
+}
+.segmentos span {
+  flex: 1;
+  background: var(--cor-linha);
+  border-radius: var(--raio-controle);
+  transition: background-color 150ms ease-out;
+}
+.segmentos .ativo { background: var(--cor-tinta); }
+
+@media (min-width: 1024px) {
+  .segmentos { display: none; }
+}
+
+/* ---------- 4. Botões e links ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--esp-2);
+  height: 52px;
+  padding: 0 var(--esp-5);
+  border: 1px solid transparent;
+  border-radius: var(--raio-controle);
+  font-family: var(--fonte-texto);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out, transform 100ms ease-out;
+}
+.btn:active { transform: scale(0.98); }
+.btn svg { flex: none; width: 18px; height: 18px; }
+
+.btn--primario {
+  background: var(--cor-acento);
+  border-color: var(--cor-acento);
+  color: var(--cor-texto-botao);
+}
+.btn--primario:hover {
+  background: var(--cor-acento-forte);
+  border-color: var(--cor-acento-forte);
+}
+
+.btn--secundario {
+  background: transparent;
+  border-color: var(--cor-borda);
+  color: var(--cor-tinta);
+}
+.btn--secundario:hover {
+  background: var(--cor-tinta);
+  border-color: var(--cor-tinta);
+  color: var(--cor-fundo);
+}
+
+/* Botão preto ("Ver a coleção", "Ver conjuntos"): o acento é só do WhatsApp.
+   A seta desliza 3px no hover. */
+.btn--tinta {
+  background: var(--cor-tinta);
+  border-color: var(--cor-tinta);
+  color: var(--cor-fundo);
+}
+.btn--tinta:hover {
+  background: var(--cor-tinta-suave);
+  border-color: var(--cor-tinta-suave);
+}
+.btn--tinta svg { transition: transform 250ms var(--suave); }
+.btn--tinta:hover svg { transform: translateX(3px); }
+
+.btn--icone {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+}
+.btn--icone svg { width: 20px; height: 20px; }
+
+.btn--largo { width: 100%; }
+
+/* Ação de apoio dentro de seção (ex: "Pausar vídeos"): mesma família do secundário, 44px. */
+.btn--compacto {
+  height: 44px;
+  padding: 0 14px;
+  font-size: 14px;
+}
+.btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.btn--secundario:disabled:hover {
+  background: transparent;
+  border-color: var(--cor-borda);
+  color: var(--cor-tinta);
+}
+
+.btn [data-rotulo] { transition: opacity 120ms ease-out; }
+.btn.abrindo [data-rotulo] { opacity: 0.85; }
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--cor-tinta);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition: color 150ms ease-out;
+}
+.link:hover { color: var(--cor-tinta-suave); }
+.link svg { flex: none; width: 16px; height: 16px; }
+.link--pequeno { font-size: 13px; }
+button.link { padding: 0; border: 0; background: none; cursor: pointer; }
+
+@media (min-width: 1024px) {
+  .btn { height: 48px; }
+  .btn--compacto { height: 44px; }
+  .btn--largo { width: auto; }
+  .link { min-height: 32px; }
+}
+
+/* ---------- 5. Barra de topo, cabeçalho claro e busca ---------- */
+
+/* Superfícies pretas (barra de topo e rodapé): foco visível em claro. */
+.barra-topo :focus-visible,
+.rodape :focus-visible { outline-color: var(--cor-sobre-escuro); }
+
+/* Barra de topo: faixa fina na tinta, frases claras de 13px.
+   Celular: uma frase por vez, centrada; o app.js reveza com fade (parada com movimento reduzido).
+   Desktop: todas lado a lado. Sem JS: só a primeira. */
+.barra-topo {
+  background: var(--cor-escuro);
+  color: var(--cor-sobre-escuro);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.barra-topo-lista {
+  list-style: none;
+  display: grid;
+  align-items: center;
+  height: 32px;
+  text-align: center;
+}
+.barra-topo-lista li {
+  grid-area: 1 / 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 300ms ease-out, visibility 0s linear 300ms;
+}
+.barra-topo-lista li.ativa {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 300ms ease-out, visibility 0s;
+}
+
+/* Cabeçalho claro, fixo no alto, com hairline embaixo.
+   Celular: [Menu] [wordmark] ... [Buscar] [Favoritos] [WhatsApp].
+   Desktop: [wordmark] [navegação no centro] [Buscar] [Favoritos] [Instagram] [Pedir no WhatsApp]. */
+.topo {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--cor-fundo);
+  border-bottom: 1px solid var(--cor-linha);
+}
+.topo-inner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "menu marca acoes";
+  align-items: center;
+  column-gap: var(--esp-1);
+  min-height: var(--topo-altura);
+}
+.topo-inner > .topo-menu { grid-area: menu; margin-left: -10px; }
+.topo-marca {
+  grid-area: marca;
+  justify-self: start;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 44px;
+  color: var(--cor-tinta);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Wordmark: o nome da marca em texto, exatamente como está no config (ltmodasestilo, minúsculo).
+   IBM Plex Sans 600: o "l" tem cauda e não é lido como "I" ao lado do "t".
+   Entreletra levemente fechada (-0.02em): mais que isso, o "ss" de "dass" encosta.
+   Embaixo, a linha pequena em caixa alta espaçada (config.subtituloMarca), como o "FASHION"
+   da referência. */
+.wordmark {
+  font-family: var(--fonte-marca);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-kerning: normal;
+}
+.topo-marca .wordmark { font-size: 22px; }
+.marca-sub {
+  margin-top: 4px;
+  padding-left: 1px;
+  font-family: var(--fonte-texto);
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+}
+.topo-marca img {
+  height: 24px;
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+}
+
+.topo-nav { display: none; }
+
+.topo-acoes {
+  grid-area: acoes;
+  display: flex;
+  align-items: center;
+}
+
+/* Botão de ícone do cabeçalho (Menu, Buscar, Favoritos, Instagram): 44x44, sem borda. */
+.topo-icone {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--cor-tinta);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 150ms ease-out, transform 100ms ease-out;
+}
+.topo-icone:hover { background: var(--cor-painel); }
+.topo-icone:active { transform: scale(0.94); }
+.topo-insta { display: none; }
+.topo-whats { display: none; }
+.topo-whats-icone {
+  width: 40px;
+  height: 40px;
+  margin-left: var(--esp-1);
+}
+
+/* Contador de favoritos: bolinha preta sobre o coração (aria-hidden; o número está no rótulo). */
+.topo-contador {
+  position: absolute;
+  top: 4px;
+  right: 2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--cor-tinta);
+  color: var(--cor-fundo);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Busca: linha logo abaixo do cabeçalho, aberta pela lupa (sem JS, sempre aberta).
+   16px no campo para o iPhone não ampliar a página ao focar. */
+.topo-busca { border-top: 1px solid var(--cor-linha); }
+html.js .topo-busca:not(.topo-busca--aberta) { display: none; }
+.busca {
+  position: relative;
+  display: flex;
+  padding-top: var(--esp-3);
+  padding-bottom: var(--esp-3);
+}
+.busca-campo {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 46px;
+  padding: 0 52px 0 16px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-controle);
+  background: var(--cor-cartao);
+  color: var(--cor-tinta);
+  font: 400 16px/1 var(--fonte-texto);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.busca-campo::placeholder { color: var(--cor-tinta-suave); opacity: 1; }
+.busca-enviar {
+  position: absolute;
+  top: var(--esp-3);
+  right: var(--gutter);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--cor-tinta);
+  cursor: pointer;
+}
+.busca-enviar:focus-visible { outline-offset: -6px; }
+
+/* Na peça, com a barra fixa à vista, o ícone de WhatsApp do topo some sem mudar nada de lugar. */
+.topo-whats-icone { transition: opacity 150ms ease-out, visibility 0s; }
+body.barra-visivel .topo-whats-icone {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 150ms ease-out, visibility 0s linear 150ms;
+}
+
+@media (min-width: 1024px) {
+  .barra-topo-lista {
+    display: flex;
+    justify-content: center;
+    gap: 56px;
+  }
+  .barra-topo-lista li {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .topo-inner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "marca nav acoes";
+    column-gap: var(--esp-6);
+  }
+  .topo-inner > .topo-menu,
+  .topo-whats-icone { display: none; }
+  .topo-marca .wordmark { font-size: 26px; }
+  .marca-sub { font-size: 9px; margin-top: 5px; }
+  .topo-marca img { height: 28px; }
+
+  .topo-nav {
+    display: block;
+    grid-area: nav;
+    justify-self: center;
+  }
+  .topo-nav ul {
+    list-style: none;
+    display: flex;
+    gap: var(--esp-6);
+    white-space: nowrap;
+  }
+  .topo-nav a {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--cor-tinta);
+    text-decoration: none;
+  }
+  .topo-nav a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 9px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 250ms var(--suave);
+  }
+  .topo-nav a:hover::after { transform: scaleX(1); }
+
+  .topo-acoes { margin-right: 0; gap: 2px; }
+  .topo-whats {
+    display: inline-flex;
+    height: 42px;
+    margin-left: var(--esp-3);
+  }
+  .busca.container { max-width: 720px; }
+}
+@media (min-width: 1280px) {
+  .topo-nav ul { gap: var(--esp-7); }
+  .topo-insta { display: inline-flex; }
+}
+
+/* ---------- 6. Menu do celular (dialog em tela cheia) ---------- */
+
+/* 100vh primeiro (WebView antiga); 100dvh onde existir, para a base do menu não ficar
+   atrás da barra de endereço. */
+.menu {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--cor-fundo);
+  color: var(--cor-tinta);
+  box-shadow: var(--sombra-fixa);
+}
+.menu::backdrop { background: transparent; }
+.menu-painel {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+.menu { overflow-y: auto; }
+.menu-topo {
+  height: var(--topo-altura);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--cor-linha);
+}
+/* O painel do menu é claro: o wordmark volta para a tinta. */
+.menu-topo .topo-marca {
+  min-height: 44px;
+  color: var(--cor-tinta);
+}
+.topo-menu-fechar {
+  height: 44px;
+  padding: 0 14px;
+  font-size: 14px;
+}
+.menu-nav ul { list-style: none; }
+.menu-nav a {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--cor-linha);
+  font-family: var(--fonte-titulo);
+  font-size: 24px;
+  font-weight: 400;
+  text-decoration: none;
+}
+.menu-insta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-2);
+  min-height: 44px;
+  margin: var(--esp-4) var(--gutter) 0;
+  font-size: 16px;
+  color: var(--cor-tinta);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.menu-base {
+  margin-top: auto;
+  padding: var(--esp-4) var(--gutter) calc(var(--esp-4) + env(safe-area-inset-bottom, 0px));
+}
+
+/* ---------- 7. Home: topo dividido, categorias, estilos, painéis, benefícios, novidades ---------- */
+
+/* Rótulo pequeno em caixa alta espaçada acima dos títulos (como "NEW COLLECTION" na referência).
+   Tinta suave (6,5:1 sobre o fundo), nunca o cinza claro da imagem. */
+.rotulo {
+  margin-bottom: var(--esp-3);
+  font-family: var(--fonte-texto);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cor-tinta-suave);
+}
+
+/* Cabeçalho de seção: rótulo e título à esquerda; link com seta à direita, na base do título. */
+.cabeca-secao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--esp-2) var(--esp-6);
+  margin-bottom: var(--esp-6);
+}
+.cabeca-titulos h2 { max-width: 22ch; }
+.link-seta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-2);
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cor-tinta);
+  text-decoration: none;
+}
+.link-seta svg { flex: none; transition: transform 250ms var(--suave); }
+.link-seta:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.link-seta:hover svg { transform: translateX(3px); }
+
+/* 7.1 Topo dividido.
+   Celular: texto e botões primeiro (o botão fica na primeira tela), a foto 4:5 logo abaixo
+   (o rosto aparece na primeira tela) e os três destaques depois da foto.
+   Desktop: texto e destaques à esquerda sobre o creme; a foto ocupa a coluna da direita até a
+   borda da janela, com a numeração vertical 01, 02, 03 numa pílula branca. */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "texto" "midia" "destaques";
+}
+.hero-texto {
+  grid-area: texto;
+  padding: var(--esp-6) var(--gutter) var(--esp-7);
+}
+.hero h1 {
+  font-size: clamp(2.5rem, 1.1rem + 4vw, 4.5rem);
+  line-height: 1.04;
+  letter-spacing: -0.015em;
+}
+.hero-frase {
+  margin-top: var(--esp-4);
+  max-width: 40ch;
+  font-size: 16px;
+  color: var(--cor-tinta-suave);
+}
+.hero-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--esp-3) var(--esp-6);
+  margin-top: var(--esp-6);
+}
+
+/* "Ver vídeos" com o play num círculo (o "Watch Lookbook" da referência). */
+.link-play {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-3);
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cor-tinta);
+  text-decoration: none;
+}
+.link-play-circulo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding-left: 2px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 50%;
+  transition: background-color 150ms ease-out, border-color 150ms ease-out, color 150ms ease-out, transform 200ms var(--suave);
+}
+.link-play:hover .link-play-circulo {
+  background: var(--cor-tinta);
+  border-color: var(--cor-tinta);
+  color: var(--cor-fundo);
+  transform: scale(1.06);
+}
+
+.hero-midia {
+  grid-area: midia;
+  position: relative;
+}
+.hero-faixa {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.hero-faixa::-webkit-scrollbar { display: none; }
+.hero-slide {
+  flex: 0 0 100%;
+  aspect-ratio: 4 / 5;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+.hero-slide-link { display: block; height: 100%; }
+.hero-foto {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
+}
+
+/* Numeração vertical 01, 02, 03 (botões de 44px de largura) e pausa, numa pílula branca sólida
+   na borda direita da foto. O número atual fica em tinta com um traço vertical embaixo. */
+.hero-controles {
+  position: absolute;
+  right: var(--gutter);
+  bottom: var(--gutter);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--esp-1) 0;
+  border-radius: 22px;
+  background: var(--cor-cartao);
+}
+.hero-numero,
+.hero-pausa {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--cor-tinta-suave);
+  font: 600 12px/1 var(--fonte-texto);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.hero-numero[aria-current="true"] {
+  align-items: flex-start;
+  height: 60px;
+  padding-top: 14px;
+  color: var(--cor-tinta);
+}
+.hero-numero[aria-current="true"]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 1px;
+  height: 18px;
+  background: var(--cor-tinta);
+}
+.hero-numero:hover,
+.hero-pausa:hover { color: var(--cor-tinta); }
+.hero-pausa { color: var(--cor-tinta); }
+.hero-pausa .icone-tocar,
+.hero-pausa[data-estado="pausado"] .icone-pausar { display: none; }
+.hero-pausa[data-estado="pausado"] .icone-tocar { display: block; }
+
+/* Destaques: ícone num círculo bege, título e linha de apoio. No celular, três colunas só com o título. */
+.hero-destaques {
+  grid-area: destaques;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--esp-2);
+  padding: var(--esp-5) var(--gutter) 0;
+}
+.hero-destaques li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--esp-2);
+  text-align: center;
+}
+.destaque-icone {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--cor-painel);
+}
+.destaque-texto { display: flex; flex-direction: column; gap: 2px; }
+.destaque-texto strong { font-size: 12.5px; font-weight: 600; line-height: 1.3; }
+.destaque-texto span { display: none; font-size: 13px; color: var(--cor-tinta-suave); line-height: 1.35; }
+
+@media (min-width: 1024px) {
+  .hero {
+    grid-template-columns: minmax(0, 52fr) minmax(0, 48fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas: "texto midia" "destaques midia";
+    height: clamp(560px, calc(100vh - 150px), 680px);
+  }
+  /* O texto alinha com a borda esquerda do container: a coluna tem 52% da página, então a
+     margem do container ((página - 1280) / 2) é a coluna dividida por 1,04 menos 640px. */
+  .hero-texto,
+  .hero-destaques {
+    padding-left: max(var(--gutter), calc(100% / 1.04 - var(--container) / 2 + var(--gutter)));
+    padding-right: var(--esp-9);
+  }
+  .hero-texto {
+    align-self: end;
+    padding-top: var(--esp-8);
+    padding-bottom: var(--esp-8);
+  }
+  .hero-frase { margin-top: var(--esp-5); font-size: 17px; }
+  .hero-acoes { margin-top: var(--esp-7); gap: var(--esp-6); }
+
+  .hero-midia { height: 100%; }
+  .hero-faixa { height: 100%; }
+  .hero-slide { aspect-ratio: auto; height: 100%; }
+  .hero-controles { top: 50%; bottom: auto; right: var(--esp-6); transform: translateY(-50%); }
+
+  /* Destaques em linha, separados por divisórias finas; espaço embaixo para o cartão das
+     categorias, que sobe sobre a base do topo. */
+  .hero-destaques {
+    align-self: start;
+    display: flex;
+    gap: 0;
+    padding-top: 0;
+    padding-bottom: 120px;
+  }
+  .hero-destaques li {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--esp-3);
+    text-align: left;
+    padding: 0 var(--esp-5);
+    border-left: 1px solid var(--cor-linha);
+  }
+  .hero-destaques li:first-child { padding-left: 0; border-left: 0; }
+  .destaque-texto strong { font-size: 13px; white-space: nowrap; }
+  .destaque-texto span { display: block; font-size: 12.5px; white-space: nowrap; }
+}
+
+/* 7.2 Categorias em círculos, dentro de um cartão branco com sombra suave.
+   Desktop: o cartão sobe sobre a base do topo (margem negativa). Celular: faixa com rolagem
+   lateral. Os círculos são a única forma redonda grande do site; o último é preto, com texto. */
+.categorias {
+  position: relative;
+  z-index: 2;
+  margin-top: var(--esp-6);
+}
+.categorias-cartao {
+  list-style: none;
+  display: flex;
+  gap: var(--esp-1);
+  padding: var(--esp-5) var(--esp-3);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  background: var(--cor-cartao);
+  border-radius: var(--raio-cartao);
+  box-shadow: var(--sombra-cartao);
+}
+.categorias-cartao::-webkit-scrollbar { display: none; }
+.categorias-cartao li { flex: none; scroll-snap-align: start; }
+.circulo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--esp-2);
+  width: 70px;
+  color: var(--cor-tinta);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.circulo-foto {
+  position: relative;
+  display: block;
+  width: 62px;
+  height: 62px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--cor-painel);
+  transition: box-shadow 150ms ease-out, transform 250ms var(--suave);
+}
+.circulo-foto img {
+  position: absolute;
+  max-width: none;
+  height: auto;
+}
+.circulo--destaque .circulo-foto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cor-tinta);
+}
+.circulo-texto {
+  font-family: var(--fonte-texto);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cor-fundo);
+}
+.circulo-nome {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.25;
+  text-align: center;
+}
+.circulo:hover .circulo-foto { transform: translateY(-2px); }
+.circulo:hover .circulo-foto,
+.circulo:focus-visible .circulo-foto { box-shadow: 0 0 0 2px var(--cor-cartao), 0 0 0 4px var(--cor-tinta); }
+.circulo:focus-visible { outline: none; }
+
+@media (min-width: 1024px) {
+  .categorias { margin-top: -88px; }
+  .categorias-cartao {
+    justify-content: space-around;
+    gap: var(--esp-4);
+    padding: var(--esp-7) var(--esp-8);
+    overflow: visible;
+  }
+  .circulo { width: 140px; gap: var(--esp-3); }
+  .circulo-foto { width: 96px; height: 96px; }
+  .circulo-texto { font-size: 13px; }
+  .circulo-nome { font-size: 14px; }
+}
+
+/* 7.3 Compre por categoria: quatro cards altos (4:5) com véu escuro embaixo, título e
+   "Ver peças" com seta. Celular: 2 x 2. Desktop: uma linha de 4. */
+.estilos-lista {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--esp-3);
+}
+.estilo-card {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: var(--raio-superficie);
+  color: var(--cor-sobre-escuro);
+  text-decoration: none;
+}
+.estilo-foto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
+  transition: transform 700ms var(--suave), opacity 200ms ease-out;
+}
+.estilo-card::after {
+  content: "";
+  position: absolute;
+  inset: 40% 0 0;
+  background: linear-gradient(to top, var(--cor-veu-forte) 0%, var(--cor-veu-forte) 35%, var(--cor-veu-zero) 100%);
+}
+.estilo-texto {
+  position: absolute;
+  left: var(--esp-3);
+  right: var(--esp-3);
+  bottom: var(--esp-3);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-1);
+}
+.estilo-titulo {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.estilo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.estilo-link svg { transition: transform 250ms var(--suave); }
+@media (hover: hover) {
+  .estilo-card:hover .estilo-foto { transform: scale(1.04); }
+  .estilo-card:hover .estilo-link svg { transform: translateX(3px); }
+}
+@media (min-width: 1024px) {
+  .estilos-lista { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--esp-6); }
+  .estilo-texto { left: var(--esp-6); right: var(--esp-6); bottom: var(--esp-6); gap: var(--esp-2); }
+  .estilo-titulo { font-size: 19px; }
+  .estilo-link { font-size: 14px; }
+}
+
+/* 7.4 Dois painéis bege: texto à esquerda (rótulo, título serifado, botão preto) e a imagem à
+   direita, encostada na borda do painel. Um embaixo do outro no celular, lado a lado no desktop. */
+.paineis-lista {
+  list-style: none;
+  display: grid;
+  gap: var(--esp-3);
+}
+.painel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  min-height: 220px;
+  overflow: hidden;
+  border-radius: var(--raio-superficie);
+  background: var(--cor-painel);
+}
+.painel-texto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--esp-6) var(--esp-3) var(--esp-6) var(--esp-5);
+}
+.painel-titulo {
+  max-width: 15ch;
+  margin-bottom: var(--esp-5);
+  font-size: clamp(1.5rem, 1.15rem + 1.2vw, 2.125rem);
+  line-height: 1.08;
+}
+.painel-botao {
+  height: 44px;
+  padding: 0 var(--esp-4);
+  font-size: 14px;
+}
+.painel-midia {
+  position: relative;
+  background: var(--cor-superficie);
+}
+.painel-foto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
+}
+@media (min-width: 1024px) {
+  .paineis-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--esp-6); }
+  .painel { min-height: 270px; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+  .painel-texto { padding: var(--esp-8) var(--esp-4) var(--esp-8) var(--esp-8); }
+  .painel-botao { height: 46px; padding: 0 var(--esp-5); }
+}
+
+/* 7.5 Benefícios: painel bege com quatro itens separados por divisórias finas.
+   Celular: 2 x 2. Desktop: uma linha. */
+.beneficios-lista {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: hidden;
+  border-radius: var(--raio-superficie);
+  background: var(--cor-painel);
+}
+.beneficios-lista li:nth-child(even) { border-left: 1px solid var(--cor-linha); }
+.beneficios-lista li:nth-child(n+3) { border-top: 1px solid var(--cor-linha); }
+.beneficio {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-3);
+  height: 100%;
+  min-height: 84px;
+  padding: var(--esp-4) var(--esp-3);
+  color: var(--cor-tinta);
+  text-decoration: none;
+}
+.beneficio svg { flex: none; }
+.beneficio-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.3;
+}
+.beneficio-texto strong { font-size: 14px; font-weight: 600; }
+.beneficio-texto span { color: var(--cor-tinta-suave); }
+.beneficio--link:hover strong { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+@media (min-width: 1024px) {
+  .beneficios-lista {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    padding: var(--esp-5) 0;
+  }
+  .beneficios-lista li { position: relative; border: 0 !important; }
+  .beneficios-lista li + li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 14px;
+    bottom: 14px;
+    width: 1px;
+    background: var(--cor-linha);
+  }
+  .beneficio { justify-content: center; padding: var(--esp-4) var(--esp-5); }
+  .beneficio-texto { font-size: 13.5px; }
+  .beneficio-texto strong { font-size: 15px; }
+}
+
+/* 7.6 Receba as novidades: painel bege com foto à esquerda e texto à direita (rótulo, título
+   serifado, frase, botão verde de WhatsApp e o link do Instagram). */
+.receba-painel {
+  display: grid;
+  overflow: hidden;
+  border-radius: var(--raio-superficie);
+  background: var(--cor-painel);
+}
+.receba-foto { aspect-ratio: 4 / 3; }
+.receba-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 18%;
+}
+.receba-texto { padding: var(--esp-7) var(--esp-5) var(--esp-8); }
+.receba-texto h2 { font-size: clamp(1.875rem, 1.3rem + 1.8vw, 2.75rem); }
+.receba-texto > p:not(.rotulo) {
+  margin-top: var(--esp-3);
+  max-width: 44ch;
+  color: var(--cor-tinta-suave);
+}
+.receba-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--esp-2) var(--esp-6);
+  margin-top: var(--esp-6);
+}
+@media (min-width: 1024px) {
+  .receba-painel {
+    grid-template-columns: minmax(0, 34fr) minmax(0, 66fr);
+    min-height: 320px;
+  }
+  .receba-foto { aspect-ratio: auto; position: relative; }
+  .receba-foto img { position: absolute; inset: 0; }
+  .receba-texto {
+    align-self: center;
+    padding: var(--esp-9) var(--esp-10);
+  }
+}
+
+/* Carrossel de peças ("Você também pode gostar"): faixa com scroll-snap (arraste no celular)
+   e setas no desktop com mouse, que o app.js mostra, desativa nas pontas e esconde quando tudo
+   cabe. Dois cards e a ponta do terceiro no celular. */
+.carrossel { position: relative; }
+.carrossel-faixa {
+  list-style: none;
+  display: flex;
+  gap: var(--esp-3);
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 0 var(--gutter);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: var(--gutter);
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.carrossel-faixa::-webkit-scrollbar { display: none; }
+.carrossel-item {
+  flex: 0 0 44vw;
+  max-width: 280px;
+  scroll-snap-align: start;
+}
+.carrossel-seta { display: none; }
+
+@media (min-width: 1024px) {
+  .carrossel-faixa {
+    gap: var(--esp-6);
+    margin: 0;
+    padding: 0;
+    scroll-padding-left: 0;
+  }
+  .carrossel-item { flex-basis: calc((100% - 3 * var(--esp-6)) / 4); max-width: none; }
+}
+@media (min-width: 1024px) and (hover: hover) {
+  .carrossel-seta {
+    position: absolute;
+    top: 38%;
+    z-index: 2;
+    display: inline-flex;
+    background: var(--cor-cartao);
+  }
+  .carrossel-seta--anterior { left: -22px; }
+  .carrossel-seta--proxima { right: -22px; }
+}
+
+/* ---------- 7b. Vídeos (faixa horizontal de cards 9:16, formato dos stories) ---------- */
+
+/* Cabeçalho da faixa: o mesmo .cabeca-secao das outras seções (título e, à direita, os controles). */
+.videos-controles {
+  display: flex;
+  gap: var(--esp-2);
+}
+.videos-alternar .icone-tocar,
+.videos-alternar[data-estado="pausado"] .icone-pausar { display: none; }
+.videos-alternar[data-estado="pausado"] .icone-tocar { display: block; }
+.videos-seta { display: none; }
+
+.videos-faixa {
+  list-style: none;
+  display: flex;
+  gap: var(--esp-3);
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 0 var(--gutter);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: var(--gutter);
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.videos-faixa::-webkit-scrollbar { display: none; }
+.video-card {
+  flex: 0 0 42vw;
+  max-width: 240px;
+  scroll-snap-align: start;
+}
+.video-card-link {
+  display: block;
+  color: var(--cor-tinta);
+  text-decoration: none;
+}
+.video-card-midia {
+  display: block;
+  aspect-ratio: 9 / 16;
+  border-radius: var(--raio-superficie);
+}
+.video-card-midia img,
+.video-card-midia video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
+}
+/* O vídeo fica por cima da foto, invisível até o primeiro quadro: sem tela preta ao carregar. */
+.video-card-midia video {
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+.video-card-midia.com-video video { opacity: 1; }
+
+/* Play discreto no canto do pôster: avisa que o card é um vídeo enquanto ele não toca
+   (no celular, antes do primeiro gesto na faixa nenhum vídeo toca). Fundo sólido, raio 2px. */
+.video-card-play {
+  position: absolute;
+  left: var(--esp-2);
+  bottom: var(--esp-2);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding-left: 2px;
+  border-radius: var(--raio-controle);
+  background: var(--cor-fundo);
+  color: var(--cor-tinta);
+  transition: opacity 200ms ease-out;
+}
+.video-card--tocando .video-card-play { opacity: 0; }
+
+/* Linha de progresso de 2px sob o card que está tocando (mesmo traço dos segmentos). */
+.video-card-progresso {
+  display: block;
+  height: 2px;
+  margin-top: var(--esp-2);
+  background: var(--cor-linha);
+  overflow: hidden;
+}
+.video-card-progresso span {
+  display: block;
+  height: 100%;
+  background: var(--cor-tinta);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 250ms linear;
+}
+.video-card-nome {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin-top: var(--esp-2);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.video-card-cor {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--cor-tinta-suave);
+}
+.video-card-preco {
+  display: block;
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+}
+.video-card-preco s {
+  margin-right: 6px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--cor-tinta-suave);
+}
+.video-card-preco--consulta {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+@media (hover: hover) {
+  .video-card-link:hover .video-card-nome {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .videos-faixa {
+    gap: var(--esp-4);
+    margin: 0;
+    padding: 0;
+    scroll-padding-left: 0;
+  }
+  .video-card { flex-basis: 216px; }
+  .video-card-nome { font-size: 15px; }
+}
+@media (min-width: 1024px) and (hover: hover) {
+  .videos-seta { display: inline-flex; }
+}
+
+/* ---------- 8. Card de peça, favoritos, coleção, filtros e busca ---------- */
+
+/* Card: um link só (foto 3:4 sobre bege claro, nome, cor e preço) e o coração no canto da foto,
+   ao lado do link (nunca dentro). Sem caixa nem sombra: a foto é o card. */
+.cartao {
+  position: relative;
+  height: 100%;
+}
+.cartao-link {
+  display: flex;
+  flex-direction: column;
+  color: var(--cor-tinta);
+  text-decoration: none;
+}
+/* Fotos de peça em 3:4. As montagens 9:16 (frente + recorte das costas no canto inferior)
+   são cortadas embaixo: 50% 20% mantém a cabeça e o corpo da modelo inteiros. */
+.cartao-foto {
+  display: block;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--raio-superficie);
+}
+.cartao-foto img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
+  transition: transform 600ms var(--suave), opacity 250ms ease-out;
+}
+/* Segunda foto: sai sem src (data-src) e só existe depois que o app.js a carrega, no primeiro
+   hover; o crossfade espera o arquivo chegar (.carregada). No celular nunca é baixada. */
+.cartao-foto-2 { opacity: 0; }
+.cartao-foto-2:not([src]) { display: none; }
+@media (hover: hover) {
+  .cartao-link:hover .cartao-foto--dupla .cartao-foto-2.carregada { opacity: 1; }
+  .cartao-link:hover .cartao-foto:not(.cartao-foto--dupla) img { transform: scale(1.03); }
+  .cartao-link:hover .cartao-nome {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+}
+
+/* Selos sobre a foto: pequenos, sólidos. "Vídeo" em creme com texto tinta (informativo);
+   a tag da peça ("Novo") em tinta com texto creme. Nenhum em verde. */
+.selo {
+  position: absolute;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border-radius: var(--raio-controle);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  pointer-events: none;
+}
+.selo--video {
+  left: var(--esp-2);
+  bottom: var(--esp-2);
+  background: var(--cor-cartao);
+  color: var(--cor-tinta);
+}
+.selo--tag {
+  left: var(--esp-2);
+  top: var(--esp-2);
+  background: var(--cor-tinta);
+  color: var(--cor-fundo);
+}
+
+.cartao-nome {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin-top: var(--esp-3);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+/* Cor: bolinha com a cor medida na foto (corHex) e o nome da cor. Anel em borda para cores claras. */
+.cartao-cor,
+.compra-cor,
+.video-card-cor {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--esp-1);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--cor-tinta-suave);
+}
+.bolinha {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 50%;
+}
+.cartao-preco {
+  display: block;
+  margin-top: var(--esp-1);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+}
+.cartao-preco s {
+  margin-right: 6px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--cor-tinta-suave);
+}
+.cartao-preco--consulta { font-size: 13px; font-weight: 500; }
+.cartao-pix {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cor-tinta-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Coração de favoritos: botão de 44px; no card, um círculo branco de 36px no canto da foto.
+   Vazio (contorno) ou cheio (salvo), sempre em tinta: o verde é só do WhatsApp.
+   Sem JS ele não aparece, porque só funciona com script. */
+.favorito {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--cor-tinta);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.favorito svg { position: relative; z-index: 1; transition: transform 150ms ease-out; }
+.favorito:active svg { transform: scale(0.85); }
+.favorito .icone-cheio,
+.favorito[aria-pressed="true"] .icone-vazio { display: none; }
+.favorito[aria-pressed="true"] .icone-cheio { display: block; }
+.favorito--cartao {
+  position: absolute;
+  top: var(--esp-1);
+  right: var(--esp-1);
+  z-index: 2;
+}
+.favorito--cartao::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: var(--cor-cartao);
+  transition: transform 200ms var(--suave);
+}
+.favorito--cartao:hover::before { transform: scale(1.08); }
+html:not(.js) .favorito,
+html:not(.js) .topo-favoritos { display: none; }
+
+/* Coleção: rótulo, título e a frase única sobre preço à esquerda; chips à direita (desktop). */
+.colecao-cabeca {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-4);
+  margin-bottom: var(--esp-5);
+}
+.colecao-cabeca .cabeca-secao { margin-bottom: 0; }
+.colecao-aviso {
+  margin-top: var(--esp-2);
+  font-size: 15px;
+  color: var(--cor-tinta-suave);
+}
+
+.chips.chips--filtro {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--esp-2);
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 0 var(--gutter);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-padding: 0 var(--gutter);
+  scrollbar-width: none;
+}
+.chips--filtro::-webkit-scrollbar { display: none; }
+.chips--filtro .chip {
+  flex: none;
+  min-height: 44px;
+  padding: 0 var(--esp-4);
+  border-radius: 22px;
+  scroll-snap-align: start;
+  font-size: 14px;
+}
+
+.busca-resultado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--esp-3);
+  margin-bottom: var(--esp-4);
+}
+.busca-resultado:has(.busca-status:empty) { margin-bottom: 0; }
+.busca-status { font-size: 15px; font-weight: 500; }
+.busca-vazia {
+  padding: var(--esp-8) 0;
+  text-align: center;
+}
+.busca-vazia p {
+  margin: 0 auto var(--esp-2);
+  font-size: 17px;
+}
+
+.grade {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--esp-7) var(--esp-3);
+}
+.grade--quatro { gap: var(--esp-7) var(--esp-3); }
+
+.colecao-mais {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--esp-8);
+}
+
+@media (min-width: 1024px) {
+  .colecao-cabeca {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--esp-6);
+    margin-bottom: var(--esp-7);
+  }
+  .chips.chips--filtro {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+  .grade { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 56px var(--esp-6); }
+  .grade--quatro { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .cartao-nome { font-size: 15px; }
+}
+
+/* ---------- 9. Sobre (texto à esquerda, retrato 4:5 à direita) ---------- */
+
+.sobre-grade {
+  display: grid;
+  gap: var(--esp-7);
+}
+.sobre-texto h2 { margin-bottom: var(--esp-5); }
+.sobre-texto p + p { margin-top: var(--esp-4); }
+.sobre-insta { margin-top: var(--esp-3); }
+.sobre-foto {
+  aspect-ratio: 4 / 5;
+  border-radius: var(--raio-superficie);
+}
+.sobre-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
+}
+/* Imagem de ambiente opcional no texto (hoje desligada em conteudo.js). */
+.sobre-ambiente {
+  width: 64%;
+  aspect-ratio: 4 / 3;
+  margin-top: var(--esp-5);
+  border-radius: var(--raio-superficie);
+}
+.sobre-ambiente img { width: 100%; height: 100%; object-fit: cover; }
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .sobre-foto { width: min(70%, 460px); }
+}
+
+@media (min-width: 1024px) {
+  .sobre-grade {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: var(--esp-10);
+    align-items: center;
+  }
+  .sobre-texto { max-width: 560px; }
+  .sobre-foto { width: 100%; max-width: 440px; justify-self: end; }
+}
+
+/* ---------- 10. Depoimentos (citação em destaque + lista curta) ---------- */
+
+.depos {
+  list-style: none;
+  display: flex;
+  gap: var(--esp-4);
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 0 var(--gutter);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: var(--gutter);
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.depos::-webkit-scrollbar { display: none; }
+.depos li {
+  flex: 0 0 84vw;
+  max-width: 440px;
+  scroll-snap-align: start;
+}
+.depos li:nth-child(n+6) { display: none; }
+
+.depos blockquote p {
+  font-family: var(--fonte-titulo);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  max-width: none;
+}
+.depos footer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: var(--esp-3);
+}
+.depo-autor { font-size: 15px; font-weight: 500; }
+.depo-autor span { font-size: 13px; font-weight: 500; color: var(--cor-tinta-suave); }
+.depo-peca { font-size: 13px; font-weight: 500; color: var(--cor-tinta-suave); }
+
+@media (min-width: 1024px) {
+  .depos {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--esp-6);
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+  .depos li { flex: none; max-width: none; }
+  .depos li:first-child { grid-column: 1 / 8; grid-row: 1 / span 2; }
+  .depos li:first-child blockquote p { font-size: 28px; line-height: 1.3; }
+  .depos li:nth-child(n+2) { grid-column: 9 / 13; }
+  .depos li:nth-child(n+2) blockquote p {
+    font-family: var(--fonte-texto);
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0;
+  }
+  .depos li:nth-child(3) { padding-top: var(--esp-6); border-top: 1px solid var(--cor-linha); }
+  .depos li:nth-child(n+4) { display: none; }
+}
+
+/* ---------- 11. Guia de medidas (texto e "como medir" + tabela num cartão branco) ---------- */
+
+.medidas-grade {
+  display: grid;
+  gap: var(--esp-7);
+}
+.medidas-abre h2 { margin-bottom: var(--esp-4); }
+.medidas-intro { max-width: 52ch; }
+/* "Pedir ajuda com o tamanho": link de texto logo abaixo da introdução. */
+.medidas-ajuda {
+  margin-top: var(--esp-1);
+  margin-bottom: var(--esp-6);
+}
+.medidas-grade h3 { margin-bottom: var(--esp-4); }
+.medidas-como dl { display: grid; gap: var(--esp-4); }
+.medidas-par dt { font-size: 16px; font-weight: 600; }
+.medidas-par dd { margin-top: 2px; font-size: 15px; color: var(--cor-tinta-suave); max-width: 52ch; }
+.medidas-tabela {
+  padding: var(--esp-5) var(--esp-4);
+  border-radius: var(--raio-cartao);
+  background: var(--cor-cartao);
+  box-shadow: var(--sombra-cartao);
+}
+
+.tabela-rolagem {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+.tabela th, .tabela td {
+  padding: 0 var(--esp-3);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.tabela thead th {
+  height: 40px;
+  background: var(--cor-superficie);
+  font-weight: 600;
+}
+.tabela thead th:first-child { border-radius: var(--raio-controle) 0 0 var(--raio-controle); }
+.tabela thead th:last-child { border-radius: 0 var(--raio-controle) var(--raio-controle) 0; }
+.tabela tbody th, .tabela tbody td {
+  height: 48px;
+  border-bottom: 1px solid var(--cor-linha);
+}
+.tabela tbody tr:last-child th,
+.tabela tbody tr:last-child td { border-bottom: 0; }
+.tabela tbody th { font-weight: 600; }
+.tabela-rolagem--larga .tabela th:first-child,
+.tabela-rolagem--larga .tabela td:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--cor-fundo);
+}
+.tabela-rolagem--larga .tabela thead th:first-child { background: var(--cor-superficie); }
+.tabela-legenda {
+  margin-top: var(--esp-3);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cor-tinta-suave);
+}
+
+@media (min-width: 1024px) {
+  .medidas-grade {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: var(--esp-10);
+    align-items: start;
+  }
+  .medidas-tabela { padding: var(--esp-7); }
+  .medidas-tabela .tabela { font-size: 14px; }
+}
+
+/* ---------- 12. Dúvidas (acordeão em duas colunas) e trocas (painel bege) ---------- */
+
+.faq {
+  display: grid;
+  gap: 0 var(--esp-9);
+}
+.acordeao { border-bottom: 1px solid var(--cor-linha); }
+.acordeao summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-4);
+  min-height: 56px;
+  padding: var(--esp-4) 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+}
+.acordeao summary::-webkit-details-marker { display: none; }
+.acordeao summary::marker { content: ""; }
+.acordeao summary svg {
+  flex: none;
+  transition: transform 160ms ease-out;
+}
+.acordeao[open] summary svg { transform: rotate(45deg); }
+.acordeao-corpo {
+  padding: 0 0 var(--esp-5);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--cor-tinta-suave);
+}
+.acordeao-corpo p { max-width: 62ch; }
+.acordeao-corpo p + p { margin-top: var(--esp-3); }
+html.js .acordeao[open] .acordeao-corpo { animation: surgir 150ms ease-out; }
+
+.trocas-painel {
+  display: grid;
+  gap: var(--esp-6);
+  padding: var(--esp-7) var(--esp-5);
+  border-radius: var(--raio-superficie);
+  background: var(--cor-painel);
+}
+.trocas-texto h2 { margin-bottom: var(--esp-4); }
+.trocas-texto p { max-width: 70ch; }
+.trocas-texto .link-seta { margin-top: var(--esp-3); }
+/* Imagem de ambiente da faixa de trocas: só no desktop (no celular o painel fica enxuto). */
+.trocas-ambiente { display: none; }
+
+@media (min-width: 1024px) {
+  .faq { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .acordeao summary { min-height: 48px; font-size: 17px; }
+  .trocas-painel {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: var(--esp-10);
+    align-items: center;
+    padding: var(--esp-9) var(--esp-10);
+  }
+  .trocas-ambiente {
+    display: block;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--raio-superficie);
+  }
+  .trocas-ambiente img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+/* ---------- 13. Página da peça ---------- */
+
+.migalhas {
+  padding-top: var(--esp-1);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  color: var(--cor-tinta-suave);
+}
+/* Uma linha só, sempre: o nome da peça (último item) encolhe com reticências em vez de quebrar,
+   o que empurrava a galeria para baixo depois que a fonte carregava (CLS no celular).
+   Links com 44px de altura de toque. */
+.migalhas ol {
+  list-style: none;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  min-height: 44px;
+  white-space: nowrap;
+}
+.migalhas li { flex: none; }
+.migalhas li + li::before {
+  content: "/";
+  padding: 0 var(--esp-2);
+}
+.migalhas a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: inherit;
+  text-decoration: none;
+}
+.migalhas a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.migalhas li[aria-current] {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--cor-tinta);
+}
+
+.produto { margin-top: var(--esp-2); }
+
+/* Galeria: faixa com snap no celular. */
+.galeria { margin: 0 calc(-1 * var(--gutter)); }
+.galeria-miniaturas { display: none; }
+.galeria-faixa {
+  list-style: none;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.galeria-faixa::-webkit-scrollbar { display: none; }
+.galeria-faixa li {
+  flex: 0 0 100%;
+  aspect-ratio: 3 / 4;
+  scroll-snap-align: start;
+}
+.galeria-faixa img,
+.galeria-faixa video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
+}
+/* Linha sob a galeria no celular: segmentos à esquerda e "Ver o vídeo" à direita (44px de toque).
+   Nada por cima da foto. */
+.galeria-rodape {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-4);
+  min-height: 44px;
+  margin: var(--esp-1) var(--gutter) 0;
+}
+.galeria-rodape .segmentos {
+  flex: 1 1 auto;
+  margin: 0;
+}
+.galeria-ver-video {
+  flex: none;
+  min-height: 44px;
+  margin-left: auto;
+}
+
+/* Slide do vídeo: o vídeo é 9:16 e o slide é 3:4, então ele entra inteiro (contain) sobre a
+   superfície, sem cortar cabeça nem pés. Botões próprios só com JS (sem JS ficam os nativos).
+   Play central quando parado; pausa e som no canto inferior direito, 44px, fundo sólido. */
+.galeria-faixa .galeria-video { background: var(--cor-superficie); }
+.galeria-faixa .galeria-video video {
+  object-fit: contain;
+  object-position: 50% 50%;
+  background: var(--cor-superficie);
+}
+.video-play,
+.video-controles { display: none; }
+html.js .video--pronto .video-controles {
+  position: absolute;
+  right: var(--esp-3);
+  bottom: var(--esp-3);
+  z-index: 1;
+  display: flex;
+  gap: var(--esp-2);
+}
+.video-botao,
+.video-play {
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--raio-controle);
+  background: var(--cor-fundo);
+  color: var(--cor-tinta);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 150ms ease-out, color 150ms ease-out, transform 100ms ease-out;
+}
+.video-botao {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+}
+.video-botao:active,
+.video-play:active { transform: scale(0.96); }
+.video-botao[data-video-pausar] { display: none; }
+.video--tocando .video-botao[data-video-pausar] { display: inline-flex; }
+.video-botao .icone-som,
+.video--com-som .video-botao .icone-mudo { display: none; }
+.video--com-som .video-botao .icone-som { display: block; }
+html.js .video--parado .video-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  display: flex;
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+}
+.video-play svg { margin-left: 3px; }
+
+@media (hover: hover) {
+  .video-botao:hover,
+  .video-play:hover {
+    background: var(--cor-tinta);
+    color: var(--cor-fundo);
+  }
+}
+
+.galeria-dialog {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--cor-scrim);
+  display: none;
+  place-items: center;
+}
+.galeria-dialog[open] { display: grid; }
+.galeria-dialog::backdrop { background: transparent; }
+.galeria-dialog img {
+  width: auto;
+  height: auto;
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: var(--raio-controle);
+}
+.galeria-fechar {
+  position: absolute;
+  top: var(--esp-4);
+  right: var(--esp-4);
+  background: var(--cor-fundo);
+  border-color: var(--cor-fundo);
+}
+
+/* Bloco de compra: rótulo com a categoria, título serifado com o coração ao lado. */
+.compra { padding-top: var(--esp-6); }
+.compra .rotulo { margin-bottom: var(--esp-2); }
+.compra-titulo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--esp-3);
+}
+.compra h1 {
+  font-size: 32px;
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+}
+.favorito--peca {
+  flex: none;
+  margin-top: -2px;
+  border: 1px solid var(--cor-linha);
+  background: var(--cor-cartao);
+  transition: border-color 150ms ease-out;
+}
+.favorito--peca:hover { border-color: var(--cor-tinta); }
+.compra-selo {
+  margin-top: var(--esp-2);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--cor-tinta-suave);
+}
+.compra-cor {
+  margin-top: var(--esp-2);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--cor-tinta);
+}
+.compra-cor .bolinha { width: 16px; height: 16px; }
+
+.preco-bloco {
+  margin-top: var(--esp-5);
+  font-variant-numeric: tabular-nums;
+}
+.preco-antigo { font-size: 14px; color: var(--cor-tinta-suave); }
+.preco-atual {
+  font-family: var(--fonte-titulo);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.1;
+  /* A grotesca de título aplica tnum também à vírgula e abre "R$ 189 , 90". */
+  font-variant-numeric: normal;
+}
+.preco-pix { margin-top: var(--esp-1); font-size: 15px; font-weight: 500; }
+.preco-parcela { font-size: 14px; color: var(--cor-tinta-suave); }
+/* Sem preço: frase no lugar do valor, em texto e não em número de 24px. */
+.preco-consulta {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* Chips de tamanho: radios nativos, visualmente ocultos mas focáveis. */
+.tamanhos { margin-top: var(--esp-6); }
+.tamanhos-legenda {
+  padding: 0;
+  margin-bottom: var(--esp-2);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-2);
+}
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-controle);
+  background: transparent;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 120ms ease-out, border-color 120ms ease-out, color 120ms ease-out;
+}
+.chip input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+/* :has() fica em regras separadas: numa lista de seletores, um seletor que a WebView
+   não entende derruba a regra inteira (e o chip escolhido perderia o destaque). */
+.chip--ativo,
+.chip[aria-pressed="true"] {
+  background: var(--cor-tinta);
+  border-color: var(--cor-tinta);
+  color: var(--cor-fundo);
+}
+.chip:has(input:checked) {
+  background: var(--cor-tinta);
+  border-color: var(--cor-tinta);
+  color: var(--cor-fundo);
+}
+.chip.chip--foco {
+  outline: 2px solid var(--cor-tinta);
+  outline-offset: 2px;
+}
+.chip:has(input:focus-visible) {
+  outline: 2px solid var(--cor-tinta);
+  outline-offset: 2px;
+}
+.chip--esgotado {
+  border-color: var(--cor-linha);
+  color: var(--cor-tinta-suave);
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+.tamanhos-dica {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--esp-3);
+  margin-top: var(--esp-2);
+  font-size: 13px;
+  color: var(--cor-tinta-suave);
+}
+.tamanhos-dica [hidden] { display: none; }
+/* Na peça, chips maiores (padrão de varejo): 48px de altura e 56px de largura mínima. */
+.tamanhos .chip {
+  min-height: 48px;
+  min-width: 56px;
+  font-size: 16px;
+}
+
+/* Aviso do primeiro toque na barra fixa sem tamanho ("Escolha o tamanho"): texto em tinta,
+   lido pelo leitor de tela (role="status"), e os chips disponíveis ganham borda em tinta. */
+.tamanhos-aviso:empty { display: none; }
+.tamanhos-aviso {
+  margin-top: var(--esp-2);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cor-tinta);
+}
+.tamanhos--aviso .chip:not(.chip--esgotado) { border-color: var(--cor-tinta); }
+
+.compra-cta { margin-top: var(--esp-6); }
+
+/* Garantias abaixo do CTA: 3 linhas com ícone de traço, título e apoio (link quando houver). */
+.garantias {
+  list-style: none;
+  display: grid;
+  gap: var(--esp-3);
+  margin-top: var(--esp-5);
+  padding: var(--esp-4) 0;
+  border-top: 1px solid var(--cor-linha);
+  border-bottom: 1px solid var(--cor-linha);
+}
+.garantias li {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-3);
+}
+.garantias svg { flex: none; color: var(--cor-tinta); }
+.garantias li > span {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--esp-2);
+  font-size: 14px;
+  line-height: 1.35;
+}
+.garantias strong { font-weight: 600; }
+.garantias li > span > span { color: var(--cor-tinta-suave); }
+.garantias .link { min-height: 32px; }
+
+.compra-fatos {
+  list-style: none;
+  margin-top: var(--esp-3);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--cor-tinta-suave);
+}
+.compra-descricao { margin-top: var(--esp-8); }
+.compra-blocos { margin-top: var(--esp-6); border-top: 1px solid var(--cor-linha); }
+.bloco-info .acordeao-corpo { font-size: 15px; }
+.bloco-info .acordeao-corpo p + p { margin-top: var(--esp-2); }
+.bloco-info .tabela-rolagem { margin-top: var(--esp-1); }
+
+/* "Você também pode gostar": carrossel com o mesmo card da coleção. */
+.relacionadas { margin-top: var(--esp-10); }
+
+/* Espaço para a barra fixa no fim do body (não do main): assim ela nunca cobre o rodapé
+   nem a assinatura da última linha. */
+body.pagina-produto { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+
+/* A foto vira botão de ampliar (app.js), no celular também. */
+html.js .galeria-faixa img[role="button"] { cursor: zoom-in; }
+
+@media (min-width: 1024px) {
+  .produto {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--esp-6);
+    margin-top: var(--esp-6);
+    align-items: start;
+  }
+  .galeria {
+    grid-column: 1 / 8;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 56px minmax(0, 540px);
+    gap: var(--esp-2);
+    align-items: start;
+  }
+  .galeria-miniaturas {
+    display: flex;
+    flex-direction: column;
+    gap: var(--esp-2);
+  }
+  .galeria-miniaturas button {
+    position: relative;
+    width: 56px;
+    height: 75px;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-controle);
+    background: var(--cor-superficie);
+    cursor: pointer;
+    transition: border-color 150ms ease-out;
+  }
+  .galeria-miniaturas button img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
+  .galeria-miniaturas button[aria-pressed="true"] { border-color: var(--cor-tinta); }
+  /* Miniatura do vídeo: a foto principal com um play pequeno sobre fundo sólido. */
+  .miniatura-video svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 28px;
+    height: 28px;
+    margin: -14px 0 0 -14px;
+    padding: 7px 6px 7px 8px;
+    border-radius: var(--raio-controle);
+    background: var(--cor-fundo);
+    color: var(--cor-tinta);
+  }
+  .galeria-faixa {
+    display: grid;
+    overflow: hidden;
+    max-width: 540px;
+    border-radius: var(--raio-superficie);
+  }
+  /* Itens empilhados; os inativos ficam invisíveis e fora do foco (visibility após o fade). */
+  .galeria-faixa li {
+    grid-area: 1 / 1;
+    max-height: 720px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 200ms ease-out, visibility 0s linear 200ms;
+  }
+  .galeria-faixa li.ativa {
+    opacity: 1;
+    visibility: visible;
+    position: relative;
+    z-index: 1;
+    transition: opacity 200ms ease-out, visibility 0s;
+  }
+  .galeria-rodape { display: none; }
+
+  .compra {
+    grid-column: 8 / 13;
+    position: sticky;
+    top: 88px;
+    padding-top: 0;
+  }
+  .compra h1 { font-size: 42px; }
+  .compra-cta .btn { width: 100%; max-width: 420px; }
+  .compra-blocos { margin-top: var(--esp-7); }
+
+  .relacionadas { margin-top: var(--esp-11); }
+  .garantias { max-width: 420px; }
+
+  body.pagina-produto { padding-bottom: 0; }
+}
+
+/* ---------- 14. Barra fixa do CTA (celular, página da peça) ---------- */
+
+.barra-fixa {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-3);
+  padding: var(--esp-3) var(--gutter) calc(var(--esp-3) + env(safe-area-inset-bottom, 0px));
+  background: var(--cor-superficie);
+  border-top: 1px solid var(--cor-linha);
+  box-shadow: var(--sombra-fixa);
+  transform: translateY(100%);
+  transition: transform 200ms ease-out;
+}
+.barra-fixa.visivel { transform: none; }
+.barra-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.barra-preco {
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+/* "Preço pelo WhatsApp" mede 132px a 13px: cabe numa linha a partir de 375px de tela
+   (barra com vão de 12px e botão com 14px de respiro); abaixo disso desce para 12px. */
+.barra-preco--consulta {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+@media (max-width: 370px) {
+  .barra-preco--consulta { font-size: 12px; }
+}
+.barra-tamanho {
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--cor-tinta-suave);
+}
+.barra-botao {
+  flex: none;
+  height: 48px;
+  min-width: 160px;
+  padding: 0 14px;
+}
+
+@media (min-width: 1024px) {
+  .barra-fixa { display: none; }
+}
+
+/* ---------- 15. Páginas de leitura (trocas, 404) ---------- */
+
+.leitura {
+  max-width: 720px;
+  padding-top: var(--esp-7);
+}
+.leitura h1 {
+  font-size: clamp(2.25rem, 1.6rem + 2vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+}
+.leitura-abertura {
+  margin-top: var(--esp-5);
+  font-size: 17px;
+}
+.leitura-secao {
+  margin-top: var(--esp-7);
+  padding-top: var(--esp-7);
+  border-top: 1px solid var(--cor-linha);
+}
+.leitura-secao h2 {
+  font-size: clamp(1.5rem, 1.25rem + 0.8vw, 1.875rem);
+  line-height: 1.15;
+  margin-bottom: var(--esp-3);
+}
+.leitura-secao p + p { margin-top: var(--esp-3); }
+.leitura-acoes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--esp-2);
+  margin-top: var(--esp-9);
+}
+.leitura--404 { padding-top: var(--esp-9); }
+.leitura--404 .leitura-acoes { margin-top: var(--esp-7); }
+.pecas-404 { margin-top: var(--esp-10); }
+
+@media (min-width: 1024px) {
+  .leitura-acoes { flex-direction: row; align-items: center; gap: var(--esp-6); }
+}
+
+/* ---------- 16. Rodapé preto ---------- */
+
+/* Tinta quase preta, texto creme. Marca (wordmark, linha pequena, frase e ícones sociais),
+   Loja, Atendimento, Sobre e "Fique por dentro"; linha final com © e crédito das imagens. */
+.rodape {
+  margin-top: var(--secao);
+  padding: var(--esp-10) 0 var(--esp-6);
+  background: var(--cor-escuro);
+  color: var(--cor-sobre-escuro);
+}
+.rodape a { color: inherit; }
+.rodape-grade {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--esp-8) var(--esp-6);
+}
+.rodape-marca,
+.rodape-fique { grid-column: 1 / -1; }
+.rodape-nome {
+  display: inline-flex;
+  flex-direction: column;
+  min-height: 44px;
+  justify-content: center;
+  color: var(--cor-sobre-escuro);
+  text-decoration: none;
+}
+.rodape-nome .wordmark { font-size: 26px; }
+.rodape-nome img { height: 28px; width: auto; max-width: 160px; object-fit: contain; }
+.rodape-texto {
+  margin-top: var(--esp-4);
+  max-width: 32ch;
+  font-size: 14px;
+  color: var(--cor-sobre-escuro-suave);
+}
+.rodape-slogan { margin-top: var(--esp-2); font-size: 13px; color: var(--cor-sobre-escuro-suave); }
+.rodape-sociais {
+  list-style: none;
+  display: flex;
+  gap: var(--esp-1);
+  margin: var(--esp-4) 0 0 -10px;
+}
+.rodape-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  transition: background-color 150ms ease-out;
+}
+.rodape-social:hover { background: var(--cor-escuro-linha); }
+.rodape-titulo {
+  margin-bottom: var(--esp-3);
+  font-family: var(--fonte-texto);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cor-sobre-escuro);
+}
+.rodape-grupo ul { list-style: none; }
+.rodape-grupo li a,
+.rodape-grupo li > span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 15px;
+  color: var(--cor-sobre-escuro-suave);
+  text-decoration: none;
+  transition: color 150ms ease-out;
+}
+.rodape-grupo li a:hover { color: var(--cor-sobre-escuro); text-decoration: underline; text-underline-offset: 4px; }
+.rodape-fique p {
+  max-width: 34ch;
+  margin-bottom: var(--esp-4);
+  font-size: 14px;
+  color: var(--cor-sobre-escuro-suave);
+}
+.rodape-botao {
+  height: 46px;
+  padding: 0 var(--esp-4);
+  font-size: 14px;
+}
+.rodape-final {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-2) var(--esp-6);
+  margin-top: var(--esp-2);
+  padding-top: var(--esp-5);
+  border-top: 1px solid var(--cor-escuro-linha);
+  font-size: 13px;
+  color: var(--cor-sobre-escuro-suave);
+}
+.rodape-final a { text-decoration: underline; text-underline-offset: 3px; }
+
+@media (min-width: 1024px) {
+  .rodape { padding: var(--esp-10) 0 var(--esp-7); }
+  .rodape-grade {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 1.5fr);
+    gap: var(--esp-8);
+  }
+  .rodape-marca,
+  .rodape-fique { grid-column: auto; }
+  .rodape-grupo li a,
+  .rodape-grupo li > span { min-height: 34px; font-size: 14px; }
+}
+
+/* ---------- 16b. Painel de favoritos (dialog à direita; tela cheia no celular) ---------- */
+
+.favoritos {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: var(--cor-fundo);
+  color: var(--cor-tinta);
+  box-shadow: var(--sombra-cartao);
+}
+.favoritos::backdrop { background: var(--cor-scrim); }
+.favoritos-painel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.favoritos-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-3);
+  min-height: var(--topo-altura);
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--cor-linha);
+}
+.favoritos-topo h2 { font-size: 28px; }
+.favoritos-vazio {
+  padding: var(--esp-8) var(--gutter);
+  color: var(--cor-tinta-suave);
+}
+.favoritos-lista {
+  flex: 1 1 auto;
+  list-style: none;
+  overflow-y: auto;
+  padding: var(--esp-2) var(--gutter);
+}
+.favorito-item {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-2);
+  padding: var(--esp-3) 0;
+  border-bottom: 1px solid var(--cor-linha);
+}
+.favorito-link {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: var(--esp-4);
+  min-width: 0;
+  color: var(--cor-tinta);
+  text-decoration: none;
+}
+.favorito-foto {
+  flex: none;
+  width: 64px;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: var(--raio-superficie);
+  background: var(--cor-superficie);
+}
+.favorito-foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
+.favorito-texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-1);
+  min-width: 0;
+}
+.favorito-nome { font-size: 15px; font-weight: 500; line-height: 1.3; }
+.favorito-link:hover .favorito-nome { text-decoration: underline; text-underline-offset: 3px; }
+.favorito-cor {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--cor-tinta-suave);
+}
+.favorito-remover {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--cor-tinta-suave);
+  cursor: pointer;
+  transition: background-color 150ms ease-out, color 150ms ease-out;
+}
+.favorito-remover:hover { background: var(--cor-painel); color: var(--cor-tinta); }
+.favoritos-base {
+  padding: var(--esp-4) var(--gutter) calc(var(--esp-4) + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--cor-linha);
+}
+.favoritos-base .btn { width: 100%; }
+.favoritos-nota {
+  margin: var(--esp-3) auto 0;
+  font-size: 13px;
+  color: var(--cor-tinta-suave);
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .favoritos { width: 440px; }
+}
+
+/* ---------- 17. Movimento (só transform e opacity, gateado por html.js) ---------- */
+
+@keyframes surgir {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes subir {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes entrarDireita {
+  from { opacity: 0; transform: translateX(32px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pulso {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.28); }
+  100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html.js [data-revelar] {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 500ms var(--suave), transform 500ms var(--suave);
+    transition-delay: var(--atraso, 0ms);
+  }
+  html.js [data-revelar].revelado {
+    opacity: 1;
+    transform: none;
+  }
+  html.js img[data-fade] {
+    opacity: 0;
+    transition: opacity 200ms ease-out;
+  }
+  html.js img[data-fade].carregada { opacity: 1; }
+
+  /* Entrada do topo, uma vez: rótulo, título, frase e botões sobem em sequência (só CSS, então
+     não depende do app.js; a foto, que é o LCP, não anima). */
+  html.js .hero-texto > * { animation: subir 700ms var(--suave) both; }
+  html.js .hero-texto > :nth-child(2) { animation-delay: 70ms; }
+  html.js .hero-texto > :nth-child(3) { animation-delay: 140ms; }
+  html.js .hero-texto > :nth-child(4) { animation-delay: 210ms; }
+  /* Painel de favoritos entra pela direita; o coração pulsa ao salvar. */
+  .favoritos[open] { animation: entrarDireita 300ms var(--suave); }
+  .favorito.pulso svg { animation: pulso 320ms var(--suave); }
+
+  /* Rede de segurança: a classe js nasce no <head>, antes do app.js (que acrescenta "app").
+     Se o app.js não carregar (rede ruim), em 4 s o CSS mostra tudo sozinho; nada fica invisível. */
+  html.js:not(.app) [data-revelar],
+  html.js:not(.app) img[data-fade] {
+    animation: mostrarSemScript 0s linear 4s forwards;
+  }
+}
+
+@keyframes mostrarSemScript {
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- 18. Reduced motion e impressão ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+  html { scroll-behavior: auto; }
+  html.js [data-revelar] { opacity: 1; transform: none; }
+  html.js img[data-fade] { opacity: 1; }
+  .cartao-foto img, .estilo-foto { transform: none !important; }
+  .barra-fixa, .galeria-faixa li { transition: none; }
+}
+
+@media print {
+  .barra-topo, .topo, .menu, .favoritos, .barra-fixa, .btn, .segmentos, .galeria-miniaturas, .pular, .hero-controles, .carrossel-seta, .favorito { display: none !important; }
+  body { background: #fff; color: #000; }
+  .galeria-faixa { display: block; }
+  .galeria-faixa li { opacity: 1; aspect-ratio: auto; max-height: 50vh; }
+  .galeria-faixa li:not(:first-child) { display: none; }
+  .acordeao { break-inside: avoid; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 11px; }
+}
