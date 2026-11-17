@@ -242,9 +242,36 @@ Mensagens que começam com "Não foi possível carregar produtos.js" (ou config.
 
 ## Passo 6: publicar na Vercel
 
-A hospedagem é na Vercel, que tem plano gratuito suficiente para este site.
+A hospedagem é na Vercel, que tem plano gratuito suficiente para este site. As configurações já estão no `vercel.json` (rodar `npm run build` e publicar a pasta `dist`): você não precisa mexer em nada nas telas da Vercel.
 
 Antes de publicar, confira o número de `whatsapp` no `config.js`: com o número de exemplo, quem tocar nos botões manda mensagem para um desconhecido.
+
+**Caminho recomendado: pela conta do GitHub.** O projeto já está em `https://github.com/ismaelvieira12/ltmodasestilo`. Você liga a Vercel ao repositório uma vez e, daqui para frente, cada `git push` publica o site sozinho (na Vercel e no GitHub Pages).
+
+1. Abra https://vercel.com/signup e crie a conta com **Continue with GitHub**, entrando como `ismaelvieira12`. Se já tiver conta na Vercel, entre nela. Use a sua conta: a Vercel que aparece conectada dentro do Claude não é sua.
+2. No painel da Vercel, clique em **Add New...** e depois em **Project**.
+3. Em **Import Git Repository**, procure `ltmodasestilo`. Se o repositório não aparecer, clique no link para ajustar as permissões do GitHub, escolha a conta `ismaelvieira12`, marque o repositório `ltmodasestilo` e salve.
+4. Clique em **Import** ao lado de `ltmodasestilo`.
+5. Na tela **Configure Project**: deixe o nome `ltmodasestilo`, deixe **Framework Preset** em "Other" e não mexa em **Build and Output Settings** nem em **Environment Variables**. Clique em **Deploy**.
+6. Espere um ou dois minutos, até aparecer a tela de parabéns. O endereço do site aparece em **Domains**, algo como `https://ltmodasestilo.vercel.app`. É esse o link para compartilhar e para os anúncios. Os links de "pré-visualização" que a Vercel às vezes mostra pedem login para abrir; use sempre o endereço de **Domains**.
+7. Se o endereço for diferente de `https://ltmodasestilo.vercel.app` (acontece quando o nome já existe na Vercel), copie o endereço para `dominio` no `config.js`, sem barra no final, e envie a mudança com os 3 comandos abaixo. Isso é importante: o link da peça que vai na mensagem do WhatsApp, o sitemap e a prévia ao compartilhar usam esse endereço.
+8. A cada mudança (peça nova, preço, foto, texto), rode `npm run dev` para testar e depois envie, um comando de cada vez:
+
+```bash
+git add .
+```
+
+```bash
+git commit -m "Descreva a mudança"
+```
+
+```bash
+git push
+```
+
+   A Vercel roda o build sozinha a cada envio. Se o build falhar lá, a publicação não acontece e a versão anterior continua no ar; no painel da Vercel, a publicação com erro aparece em vermelho, com a mensagem.
+
+**Outro caminho: pelo terminal, sem passar pelo GitHub.**
 
 1. Crie uma conta em https://vercel.com (pode entrar com conta do Google ou do GitHub).
 2. Na pasta do projeto, conecte o computador à sua conta (só na primeira vez):
@@ -263,57 +290,12 @@ npx vercel --prod
    Na primeira vez ele faz algumas perguntas. Responda assim:
    - "Set up and deploy?": Enter (sim).
    - "Which scope?": escolha a sua conta e Enter.
-   - "Link to existing project?": n e Enter (não).
+   - "Link to existing project?": n e Enter (não). Se você já criou o projeto pelo caminho do GitHub, responda y e escolha `ltmodasestilo`.
    - "What's your project's name?": `ltmodasestilo` e Enter.
    - "In which directory is your code located?": Enter (a pasta atual).
-   - "Want to modify these settings?": n e Enter. As configurações certas já estão no `vercel.json`.
-4. Espere terminar (um ou dois minutos). No fim ele mostra o endereço do site, algo como `https://ltmodasestilo.vercel.app` (se o nome já existir na Vercel, vem com um final diferente). É esse o link para compartilhar. Os links de "pré-visualização" que a Vercel às vezes mostra pedem login para abrir; use sempre o endereço da publicação com `--prod`.
-5. Se o endereço for diferente de `https://ltmodasestilo.vercel.app`, copie o endereço para `dominio` no `config.js` (sem barra no final) e rode `npx vercel --prod` de novo, para que os links compartilhados e o sitemap fiquem certos.
-6. A cada mudança (peça nova, preço, foto, texto), rode `npm run dev` para testar e depois `npx vercel --prod` para publicar. A Vercel roda o build sozinha a cada publicação, seguindo o `vercel.json`: se o build falhar lá, a publicação não acontece e a versão anterior continua no ar. O arquivo `.vercelignore` faz a Vercel não receber as pastas `dist/` e `referencias/`, que não precisam subir.
-
-**Outro caminho: guardar o projeto no GitHub e publicar pela Vercel a partir dele.** O repositório é `https://github.com/ismaelvieira12/ltmodasestilo`.
-
-1. Na pasta do projeto, só na primeira vez, rode um comando de cada vez:
-
-```bash
-git init
-```
-
-```bash
-git add .
-```
-
-```bash
-git commit -m "Site da ltmodasestilo"
-```
-
-```bash
-git branch -M main
-```
-
-```bash
-git remote add origin https://github.com/ismaelvieira12/ltmodasestilo.git
-```
-
-```bash
-git push -u origin main
-```
-
-   No `git push`, abre uma janela para entrar no GitHub: entre pelo navegador e autorize. Avisos do tipo "LF will be replaced by CRLF" são normais. O `.gitignore` deixa de fora `dist/`, `referencias/` (a imagem de referência, que é de outra marca) e `.claude/`.
-2. Na Vercel: Add New > Project > importe o repositório `ltmodasestilo` > Deploy. As configurações já vêm do `vercel.json`. Daqui para frente, cada envio ao GitHub publica o site sozinho.
-3. Para enviar mudanças depois, rode um comando de cada vez:
-
-```bash
-git add .
-```
-
-```bash
-git commit -m "Descreva a mudança"
-```
-
-```bash
-git push
-```
+   - "Want to modify these settings?": n e Enter.
+4. No fim ele mostra o endereço do site. Se for diferente de `https://ltmodasestilo.vercel.app`, faça como no item 7 acima e rode `npx vercel --prod` de novo.
+5. Por esse caminho, cada mudança é publicada com `npx vercel --prod`. O arquivo `.vercelignore` faz a Vercel não receber as pastas `dist/` e `referencias/`, e a pasta `.vercel/` que o comando cria fica fora do GitHub (está no `.gitignore`).
 
 **Publicar pelo GitHub Pages (grátis, direto do repositório).** O site fica em `https://ismaelvieira12.github.io/ltmodasestilo/`. O arquivo `.github/workflows/pages.yml` faz o GitHub gerar e publicar o site sozinho a cada `git push`, já com o endereço certo (a subpasta `/ltmodasestilo` é ajustada automaticamente; o `dominio` do `config.js` continua valendo para o computador e para a Vercel).
 
@@ -328,7 +310,7 @@ Domínio próprio (recomendado para anúncios, porque o endereço aparece no an�
 1. Registre um domínio. Para `.com.br`, o registro é feito em https://registro.br.
 2. Na Vercel, abra o projeto, vá em Settings > Domains, adicione o domínio e siga as instruções de DNS que a tela mostra (você configura isso no painel do registro.br). Pode levar algumas horas para propagar.
 3. O HTTPS é automático.
-4. Troque `dominio` no `config.js` para o endereço novo (ex: `"https://ltmodasestilo.com.br"`) e publique de novo com `npx vercel --prod`.
+4. Troque `dominio` no `config.js` para o endereço novo (ex: `"https://ltmodasestilo.com.br"`) e publique de novo: com `git push`, se a Vercel está ligada ao GitHub, ou com `npx vercel --prod`, se você publica pelo terminal.
 
 ---
 
