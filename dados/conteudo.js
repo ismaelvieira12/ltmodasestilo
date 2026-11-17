@@ -7,15 +7,13 @@
 //
 //  Blocos, na ordem em que aparecem na home:
 //    barraTopo    - frases curtas da faixa preta fina no alto de todas as páginas
-//    navegacao    - links do meio do topo (computador) e do menu (celular)
-//    hero         - topo da home: título, frase, botão, 3 fotos que revezam e 3 destaques
-//    categorias   - atalhos redondos (círculos) no cartão branco logo abaixo do topo
-//    estilos      - "Compre por categoria": quatro fotos altas com o nome da categoria
-//    paineis      - dois painéis bege lado a lado (conjuntos e vídeos)
-//    colecao      - títulos da vitrine com todas as peças
-//    beneficios   - faixa de vantagens em painel bege
+//    navegacao    - links do topo (computador) e do menu (celular)
+//    hero         - banner de tela cheia: foto do computador, foto do celular, título, frase e botão
+//    colecao      - título da vitrine com todas as peças (abas de categoria e busca ficam nela)
+//    mosaico      - quatro quadros com foto logo abaixo da coleção (categorias e vídeos)
+//    beneficios   - faixa de vantagens com ícones
 //    novidades    - bloco "Receba as novidades" (botão de WhatsApp)
-//    ambientes    - imagens de ambiente (Unsplash) usadas nos painéis e nas trocas
+//    ambientes    - imagens de ambiente (Unsplash) usadas na faixa de trocas
 //    sobre        - seção sobre a marca
 //    depoimentos  - o que clientes disseram ([] esconde a seção)
 //    guiaMedidas  - como medir e tabela de tamanhos
@@ -51,87 +49,50 @@ module.exports = {
     { texto: "Trocas", link: "/trocas/" }
   ],
 
-  // Topo da home.
-  //   rotulo    - palavra pequena acima do título (só o que for verdade; nada de "coleção nova")
-  //   foto      - primeira foto (é a imagem que carrega primeiro e aparece ao compartilhar o site)
-  //   fotos     - as outras fotos que revezam ao lado do texto (até 2). Cada foto leva à peça
-  //               em que ela aparece.
-  //   destaques - três frases curtas com ícone, embaixo do botão (título até 20 letras,
-  //               apoio até 20 letras, para caberem numa linha no computador).
-  //               icone: "whatsapp", "video", "regua" ou "troca"
+  // Banner de tela cheia, o primeiro bloco da home. O texto fica por cima da foto, em letra
+  // escura: as duas fotos precisam ter uma área clara e lisa para ele (parede, céu, fundo).
+  //   rotulo      - palavra pequena acima do título (só o que for verdade; nada de "coleção nova")
+  //   titulo      - até 2 linhas no computador (umas 30 letras)
+  //   subtitulo   - frase curta, até 20 palavras (no celular ela some para não cobrir a foto)
+  //   foto        - foto do computador, deitada (16:9). O texto fica à ESQUERDA, sobre a parede.
+  //                 É também a imagem que aparece ao compartilhar o link do site.
+  //   fotoCelular - foto do celular, em pé (9:16). O texto fica EM CIMA, sobre a parede.
+  //                 Deixe "" para usar a foto do computador também no celular.
+  //   ctaTexto    - texto do botão preto, que leva à coleção
+  // Depois de trocar uma foto, rode "npm run fotos" para gerar as versões menores.
   hero: {
     rotulo: "Conjuntos e vestidos",
     titulo: "Moda feminina em cores vivas",
     subtitulo: "Veja cada peça em vídeo, escolha o tamanho e fale com a gente no WhatsApp.",
-    foto: "img/foto6.jpeg",
-    fotos: ["img/foto1.2.jpeg", "img/foto4.jpeg"],
-    ctaTexto: "Ver a coleção",
-    destaques: [
-      { icone: "whatsapp", titulo: "Atendimento", texto: "Direto pelo WhatsApp" },
-      { icone: "video", titulo: "Vídeo de cada peça", texto: "Veja o caimento" },
-      { icone: "regua", titulo: "Ajuda com o tamanho", texto: "Mande suas medidas" }
-    ]
+    foto: "img/banner-pagina-web.jpg",
+    fotoCelular: "img/banner-mobile.jpg",
+    ctaTexto: "Ver a coleção"
   },
 
-  // Atalhos redondos no cartão branco abaixo do topo. Cada um tem:
-  //   nome   - texto embaixo do círculo
-  //   filtro - nome da categoria das peças (igual ao de produtos.js),
-  //            ou "colecao" (todas as peças) ou "videos" (faixa de vídeos;
-  //            este aparece como um círculo preto com a palavra VÍDEOS, sem foto)
-  //   foto   - foto de peça da pasta img/
-  //   rosto  - onde está o rosto na foto, em %: [da esquerda, de cima]
-  //   zoom   - quanto aproximar (1 = foto inteira; 2.6 mostra rosto e tronco)
-  categorias: [
-    { nome: "Coleção", filtro: "colecao", foto: "img/foto7.1.jpeg", rosto: [43, 15], zoom: 2.6 },
-    { nome: "Conjuntos com short", filtro: "Conjuntos com short", foto: "img/foto6.1.jpeg", rosto: [50, 18], zoom: 2.8 },
-    { nome: "Conjuntos com pantalona", filtro: "Conjuntos com pantalona", foto: "img/foto9.jpeg", rosto: [44, 15], zoom: 2.6 },
-    { nome: "Vestidos", filtro: "Vestidos", foto: "img/foto4.jpeg", rosto: [44, 19], zoom: 2.6 },
-    { nome: "Vídeos", filtro: "videos" }
-  ],
-
-  // "Compre por categoria": quatro fotos altas com o nome por cima. O clique filtra a coleção.
-  //   filtro: nome da categoria das peças (igual ao de produtos.js), ou "videos" (faixa de vídeos)
-  estilos: {
-    rotulo: "Compre por categoria",
-    titulo: "Encontre seu estilo",
-    cards: [
-      { titulo: "Conjuntos com short", filtro: "Conjuntos com short", foto: "img/foto1.jpeg" },
-      { titulo: "Conjuntos com pantalona", filtro: "Conjuntos com pantalona", foto: "img/foto2.jpeg" },
-      { titulo: "Vestidos", filtro: "Vestidos", foto: "img/foto4.1.jpeg" },
-      { titulo: "Peças em vídeo", filtro: "videos", foto: "img/foto8.jpeg" }
-    ]
-  },
-
-  // Dois painéis bege lado a lado (um embaixo do outro no celular). Cada painel tem:
-  //   rotulo, titulo - palavra pequena e título (2 linhas no máximo)
-  //   botao, link    - texto do botão e para onde ele leva (mesmos exemplos da navegacao)
-  //   foto           - foto de peça da pasta img/
-  //   ambiente       - OU, no lugar da foto, o nome de uma imagem do bloco "ambientes".
-  //                    Nunca coloque preço nem nome de peça sobre imagem de ambiente.
-  paineis: [
-    {
-      rotulo: "Conjuntos",
-      titulo: "Cores vivas para usar agora",
-      botao: "Ver conjuntos",
-      link: "/?busca=conjunto#colecao",
-      foto: "img/foto1.1.jpeg"
-    },
-    {
-      rotulo: "Veja no corpo",
-      titulo: "Cada peça em vídeo",
-      botao: "Ver vídeos",
-      link: "#videos",
-      ambiente: "parede"
-    }
-  ],
-
-  // Títulos da vitrine com todas as peças (busca e filtros ficam nela).
+  // Título da vitrine com todas as peças, logo abaixo do banner. As abas de categoria
+  // (Todas, Conjuntos com short...) saem sozinhas das categorias de produtos.js.
   colecao: {
-    rotulo: "Coleção",
-    titulo: "Escolha a sua peça"
+    titulo: "Coleção"
   },
 
-  // Faixa de vantagens em painel bege. Só o que a loja cumpre sempre.
+  // Mosaico de quatro quadros com foto, logo abaixo da coleção. Na ordem:
+  //   1º - quadro alto, à esquerda
+  //   2º e 3º - quadros menores, lado a lado
+  //   4º - faixa larga escura, com texto à esquerda e a foto à direita
+  // Cada quadro tem:
+  //   titulo - nome no quadro (curto: até 3 palavras)
+  //   texto  - frase curta, só no 4º quadro (até 12 palavras; deixe "" para não mostrar)
+  //   filtro - nome da categoria das peças (igual ao de produtos.js), ou "videos" (faixa de vídeos)
+  //   foto   - foto de peça da pasta img/
+  // Use exatamente 4 quadros, ou [] para esconder o mosaico.
+  mosaico: [
+    { titulo: "Conjuntos com pantalona", filtro: "Conjuntos com pantalona", foto: "img/foto2.jpeg" },
+    { titulo: "Conjuntos com short", filtro: "Conjuntos com short", foto: "img/foto1.jpeg" },
+    { titulo: "Vestidos", filtro: "Vestidos", foto: "img/foto4.1.jpeg" },
+    { titulo: "Cada peça em vídeo", texto: "Veja o caimento no corpo antes de pedir.", filtro: "videos", foto: "img/foto6.1.jpeg" }
+  ],
+
+  // Faixa de vantagens com ícones. Só o que a loja cumpre sempre.
   //   icone: "whatsapp", "video", "regua" ou "troca"
   //   link:  "medidas" (abre o WhatsApp com a mensagem de medidas do
   //          config.js), um endereço do site como "/trocas/" ou "#videos",
@@ -149,7 +110,6 @@ module.exports = {
   // novidades", que abre o WhatsApp com a mensagemNovidades do config.js.
   // Prometa só o que a loja vai fazer de verdade.
   novidades: {
-    rotulo: "Pelo WhatsApp",
     titulo: "Receba as novidades",
     texto: "Mande um oi e a gente avisa quando chegarem peças novas.",
     foto: "img/foto10.jpeg"
@@ -161,10 +121,6 @@ module.exports = {
   //   alt - descrição da imagem para quem usa leitor de tela
   // O site pede o tamanho certo de cada uso sozinho.
   ambientes: {
-    parede: {
-      url: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d",
-      alt: "Blusas claras em cabides de madeira penduradas num galho, em parede branca"
-    },
     pilha: {
       url: "https://images.unsplash.com/photo-1630329273801-8f629dba0a72",
       alt: "Pilha de roupas coloridas dobradas, apoiada numa mão"

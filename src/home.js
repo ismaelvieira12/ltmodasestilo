@@ -1,28 +1,32 @@
-// Home (seção 4 do DESIGN.md), na ordem:
-//   topo dividido (texto, fotos que revezam e 3 destaques), categorias em círculos num cartão
-//   branco, "Compre por categoria", dois painéis bege, coleção com busca e filtros, vídeos,
+// Home (seção 4 do DESIGN.md), na ordem da referência "AERIS":
+//   banner de tela cheia (foto do computador e foto do celular, texto escuro por cima),
+//   coleção com abas de categoria e busca, mosaico de 4 quadros (categorias e vídeos), vídeos,
 //   benefícios, "Receba as novidades", Sobre, depoimentos, guia de medidas, dúvidas e trocas.
-//   Barra de topo, cabeçalho, rodapé e painel de favoritos vêm do layout.
+//   Barra de topo, cabeçalho (transparente sobre o banner), rodapé e painel de favoritos vêm do layout.
 // Assinatura do contrato: renderHome(ctx) -> string
 
 "use strict";
 
 const layout = require("./layout.js");
+const imagens = require("./imagens.js");
 
-const { ROTULOS, ICONES, TAMANHOS } = layout;
+const { ROTULOS, ICONES } = layout;
 const {
-  botaoWhats, linkWhats, cartao, corDaPeca, tabela, segmentos, imagem, preloadImagem, altFoto,
+  botaoWhats, linkWhats, cartao, corDaPeca, tabela, segmentos, imagem, infoImagem, altFoto,
   fotoMaisAlta, precoCurto, textoComMarca, arrobaInstagram, nenhumPreco, imagemAmbiente,
-  fotoCirculo, categoriasDasPecas, hrefCategoria, temVideos
+  categoriasDasPecas, hrefCategoria, temVideos
 } = layout.componentes;
 
-const MAXIMO_VISIVEL = 12;
+// Peças à vista antes de "Ver todas as peças": uma linha de 6 no computador largo, duas de 3
+// no tablet e no computador menor, três de 2 no celular. As abas e a busca mostram todas.
+const MAXIMO_VISIVEL = 6;
 
 // sizes dos layouts desta página (px reais de CSS, ver style.css)
 const SIZES = {
-  hero: "(min-width: 1024px) 48vw, 100vw",
-  estilos: "(min-width: 1280px) 296px, (min-width: 1024px) 23vw, 46vw",
-  painel: "(min-width: 1024px) 280px, 40vw",
+  hero: "100vw",
+  colecao: "(min-width: 1280px) 200px, (min-width: 1024px) calc(33vw - 32px), (min-width: 640px) calc(33vw - 24px), calc(50vw - 22px)",
+  mosaicoAlto: "(min-width: 1280px) 470px, (min-width: 1024px) 37vw, 100vw",
+  mosaico: "(min-width: 1280px) 390px, (min-width: 1024px) 31vw, 50vw",
   novidades: "(min-width: 1024px) 400px, 100vw",
   sobre: "(min-width: 1024px) 420px, 100vw"
 };
@@ -58,184 +62,88 @@ function rotulo(ctx, texto) {
   return ehTexto(texto) ? `<p class="rotulo">${textoComMarca(ctx, texto)}</p>` : "";
 }
 
-// Destino de um filtro: "colecao" (todas as peças), "videos" (faixa de vídeos) ou uma categoria.
-function hrefFiltro(ctx, filtro) {
-  if (filtro === "colecao") return "#colecao";
-  if (filtro === "videos") return "#videos";
-  return hrefCategoria(ctx, filtro);
-}
-
-// Ícone de um benefício ou destaque (Phosphor, ver layout.js).
+// Ícone de um benefício (Phosphor, ver layout.js).
 function iconeBeneficio(nome, tamanho) {
   return ICONES[ICONES_BENEFICIO[nome] || "whatsappLinha"](tamanho);
 }
 
-// ---------- 4.1 Topo dividido ----------
-// Texto à esquerda (rótulo, título, frase, "Ver a coleção" e "Ver vídeos") com 3 destaques;
-// à direita, até 3 fotos de peças que revezam (carrossel com numeração vertical 01, 02, 03
-// e pausa; só a primeira foto é o LCP, com preload). Cada foto leva à peça em que aparece.
-// No celular: texto e botões primeiro, a foto logo abaixo (o rosto aparece na primeira tela)
-// e os destaques depois da foto.
+// srcset de uma foto com as versões menores; sem versões, só a própria foto.
+function conjuntoDe(info) {
+  return imagens.srcset(info) || `${info.src} ${info.largura}w`;
+}
+
+// ---------- 4.1 Banner de tela cheia ----------
+// Uma foto ocupa a tela inteira, por baixo do cabeçalho transparente. Computador (e qualquer
+// tela deitada): a foto deitada, com o texto à esquerda sobre a parede. Celular (tela em pé):
+// a foto em pé, com o texto em cima. As duas são o LCP da sua tela, com preload por orientação.
+// O texto é escuro: as fotos precisam ter área clara e lisa onde ele fica.
+// A sentinela no alto avisa o app.js quando a página rolou, para o cabeçalho ganhar fundo.
 function secaoHero(ctx) {
-  const { util } = ctx;
-  const e = util.escapeHtml;
+  const e = ctx.util.escapeHtml;
   const h = ctx.conteudo.hero;
-  const fotos = [h.foto, ...lista(h.fotos)].slice(0, 3);
-  const total = fotos.length;
-
-  const slides = fotos.map((f, i) => {
-    const p = pecaDaFoto(ctx, f);
-    const img = imagem(ctx, f, { alt: altDaFoto(ctx, f), sizes: SIZES.hero, classe: "hero-foto", carregamento: i === 0 ? "prioridade" : "lazy" });
-    const conteudoSlide = p ? `<a class="hero-slide-link" href="/p/${e(p.slug)}/">${img}</a>` : img;
-    return `      <div class="hero-slide" role="group" aria-roledescription="slide" aria-label="${i + 1} de ${total}" data-banner-slide data-foto>
-        ${conteudoSlide}
-      </div>`;
-  }).join("\n");
-
-  const numeros = fotos.map((f, i) => `<button type="button" class="hero-numero" data-banner-ponto="${i}" aria-label="Foto ${i + 1} de ${total}"${i === 0 ? ' aria-current="true"' : ""}>${String(i + 1).padStart(2, "0")}</button>`).join("");
-  const controles = total > 1
-    ? `
-    <div class="hero-controles" data-banner-controles hidden>
-      ${numeros}
-      <button type="button" class="hero-pausa" data-banner-pausa data-estado="tocando" aria-label="Pausar fotos">${ICONES.pause(14, ' class="icone-pausar"')}${ICONES.play(14, ' class="icone-tocar"')}</button>
-    </div>`
-    : "";
-
-  const destaques = lista(h.destaques).map((d) => `<li>
-        <span class="destaque-icone" aria-hidden="true">${iconeBeneficio(d.icone, 20)}</span>
-        <span class="destaque-texto"><strong>${e(d.titulo)}</strong><span>${e(d.texto)}</span></span>
-      </li>`).join("\n      ");
+  const deitada = infoImagem(ctx, h.foto);
+  const emPe = ehTexto(h.fotoCelular) ? infoImagem(ctx, h.fotoCelular) : null;
+  const principal = emPe || deitada;
+  const img = `<img class="hero-foto" src="${e(principal.src)}" srcset="${e(conjuntoDe(principal))}" sizes="${SIZES.hero}" width="${principal.largura}" height="${principal.altura}" alt="" fetchpriority="high" decoding="async">`;
+  const midia = emPe
+    ? `<picture>
+      <source media="(orientation: landscape)" srcset="${e(conjuntoDe(deitada))}" sizes="${SIZES.hero}" width="${deitada.largura}" height="${deitada.altura}">
+      ${img}
+    </picture>`
+    : img;
+  const cta = ehTexto(h.ctaTexto) ? h.ctaTexto : ROTULOS.catalogo;
 
   return `<section class="hero" aria-labelledby="hero-titulo">
-  <div class="hero-texto">
-    ${rotulo(ctx, h.rotulo)}
-    <h1 id="hero-titulo">${textoComMarca(ctx, h.titulo)}</h1>
-    <p class="hero-frase">${textoComMarca(ctx, h.subtitulo)}</p>
-    <div class="hero-acoes">
-      <a class="btn btn--tinta" href="#colecao">${e(ehTexto(h.ctaTexto) ? h.ctaTexto : ROTULOS.catalogo)}${ICONES.seta(18)}</a>${temVideos(ctx) ? `
-      <a class="link-play" href="#videos"><span class="link-play-circulo" aria-hidden="true">${ICONES.playFill(14)}</span>${ROTULOS.verVideos}</a>` : ""}
+  <span class="hero-sentinela" data-topo-sentinela aria-hidden="true"></span>
+  <div class="hero-midia">
+    ${midia}
+  </div>
+  <div class="container hero-conteudo">
+    <div class="hero-texto">
+      ${rotulo(ctx, h.rotulo)}
+      <h1 id="hero-titulo">${textoComMarca(ctx, h.titulo)}</h1>
+      <p class="hero-frase">${textoComMarca(ctx, h.subtitulo)}</p>
+      <div class="hero-acoes">
+        <a class="btn btn--tinta" href="#colecao">${e(cta)}${ICONES.seta(18)}</a>${temVideos(ctx) ? `
+        <a class="link-play" href="#videos"><span class="link-play-circulo" aria-hidden="true">${ICONES.playFill(14)}</span>${ROTULOS.verVideos}</a>` : ""}
+      </div>
     </div>
   </div>
-  <div class="hero-midia" data-banner aria-roledescription="carrossel" aria-label="Fotos da coleção">
-    <div class="hero-faixa" data-banner-faixa>
-${slides}
-    </div>${controles}
-  </div>${destaques ? `
-  <ul class="hero-destaques">
-      ${destaques}
-  </ul>` : ""}
 </section>`;
 }
 
-// ---------- 4.2 Categorias em círculos (cartão branco sobre a base do topo) ----------
-// O último é o círculo preto "Vídeos", no lugar do "SALE" da referência.
-function secaoCategorias(ctx) {
-  const e = ctx.util.escapeHtml;
-  const itens = lista(ctx.conteudo.categorias).filter((c) => c.filtro !== "videos" || temVideos(ctx));
-  if (!itens.length) return "";
-  const html = itens.map((c) => {
-    if (c.filtro === "videos") {
-      return `<li><a class="circulo circulo--destaque" href="#videos">
-        <span class="circulo-foto" aria-hidden="true"><span class="circulo-texto">${e(c.nome)}</span></span>
-        <span class="circulo-nome">${e(c.nome)}</span>
-      </a></li>`;
-    }
-    return `<li><a class="circulo" href="${e(hrefFiltro(ctx, c.filtro))}">
-        <span class="circulo-foto">${fotoCirculo(ctx, c.foto, c.rosto, c.zoom)}</span>
-        <span class="circulo-nome">${e(c.nome)}</span>
-      </a></li>`;
-  }).join("\n      ");
-  return `<nav class="categorias" aria-label="Categorias">
-  <div class="container">
-    <ul class="categorias-cartao">
-      ${html}
-    </ul>
-  </div>
-</nav>`;
+// Preload das fotos do banner, uma por orientação de tela (a mesma regra do <picture>).
+function preloadsHero(ctx) {
+  const h = ctx.conteudo.hero;
+  const deitada = infoImagem(ctx, h.foto);
+  const base = (info) => ({ href: info.src, srcset: conjuntoDe(info), sizes: SIZES.hero });
+  if (!ehTexto(h.fotoCelular)) return [base(deitada)];
+  return [
+    { ...base(deitada), media: "(orientation: landscape)" },
+    { ...base(infoImagem(ctx, h.fotoCelular)), media: "(orientation: portrait)" }
+  ];
 }
 
-// Cabeçalho de seção: rótulo, título serifado e, à direita, um link com seta (opcional).
-function cabecaSecao(ctx, { id, rotuloTexto, titulo, link, extra = "" }) {
-  const e = ctx.util.escapeHtml;
-  return `<div class="cabeca-secao">
-      <div class="cabeca-titulos">
-        ${rotulo(ctx, rotuloTexto)}
-        <h2 id="${id}">${textoComMarca(ctx, titulo)}</h2>${extra}
-      </div>${link ? `
-      <a class="link-seta" href="${e(link.href)}">${e(link.texto)}${ICONES.seta(16)}</a>` : ""}
-    </div>`;
-}
-
-// ---------- 4.3 Compre por categoria ----------
-function secaoEstilos(ctx) {
-  const e = ctx.util.escapeHtml;
-  const est = ctx.conteudo.estilos;
-  const cards = est ? lista(est.cards).filter((m) => m.filtro !== "videos" || temVideos(ctx)) : [];
-  if (!cards.length) return "";
-  const html = cards.map((m) => {
-    const ehVideo = m.filtro === "videos";
-    return `<li><a class="estilo-card" href="${e(hrefFiltro(ctx, m.filtro))}" data-foto>
-        ${imagem(ctx, m.foto, { alt: "", sizes: SIZES.estilos, classe: "estilo-foto" })}
-        <span class="estilo-texto"><span class="estilo-titulo">${e(m.titulo)}</span><span class="estilo-link">${ehVideo ? ROTULOS.verVideos : ROTULOS.verPecas}${ICONES.seta(16)}</span></span>
-      </a></li>`;
-  }).join("\n      ");
-  return `<section class="secao estilos" aria-labelledby="estilos-titulo">
-  <div class="container">
-    ${cabecaSecao(ctx, { id: "estilos-titulo", rotuloTexto: est.rotulo, titulo: est.titulo, link: { href: "#colecao", texto: ROTULOS.catalogo } })}
-    <ul class="estilos-lista">
-      ${html}
-    </ul>
-  </div>
-</section>`;
-}
-
-// ---------- 4.4 Dois painéis bege ----------
-// Imagem de ambiente nunca leva preço nem nome de peça por cima.
-function midiaPainel(ctx, p) {
-  if (ehTexto(p.foto)) return imagem(ctx, p.foto, { alt: altDaFoto(ctx, p.foto), sizes: SIZES.painel, classe: "painel-foto" });
-  return imagemAmbiente(ctx, p.ambiente, { proporcao: [4, 5], larguras: [400, 640], sizes: SIZES.painel, classe: "painel-foto" });
-}
-
-function secaoPaineis(ctx) {
-  const e = ctx.util.escapeHtml;
-  const itens = lista(ctx.conteudo.paineis).filter((p) => p.link.trim() !== "#videos" || temVideos(ctx));
-  if (!itens.length) return "";
-  const html = itens.map((p) => `<li class="painel">
-      <div class="painel-texto">
-        ${rotulo(ctx, p.rotulo)}
-        <h2 class="painel-titulo">${textoComMarca(ctx, p.titulo)}</h2>
-        <a class="btn btn--tinta painel-botao" href="${e(p.link)}">${e(p.botao)}${ICONES.seta(18)}</a>
-      </div>
-      <div class="painel-midia" data-foto>
-        ${midiaPainel(ctx, p)}
-      </div>
-    </li>`).join("\n    ");
-  return `<section class="secao paineis" aria-label="Destaques da loja">
-  <ul class="container paineis-lista">
-    ${html}
-  </ul>
-</section>`;
-}
-
-// ---------- 4.5 Coleção (todas as peças, busca e filtros) ----------
-// Colunas da grade no desktop: 3 (9 peças fecham 3 linhas sem peça sozinha).
+// ---------- 4.2 Coleção (todas as peças, abas de categoria e busca) ----------
+// Título centrado e, embaixo, as abas (Todas e as categorias de produtos.js) sublinhadas.
+// Grade: 6 colunas no computador largo, 3 no tablet e no computador menor, 2 no celular.
 function secaoColecao(ctx) {
   const { config, produtos, util, conteudo } = ctx;
   const e = util.escapeHtml;
   const categorias = categoriasDasPecas(ctx);
-  const textos = conteudo.colecao || { rotulo: "Coleção", titulo: "Coleção" };
+  const textos = conteudo.colecao || { titulo: "Coleção" };
 
-  const chips = categorias.length
-    ? `<div class="chips chips--filtro" role="group" aria-label="Filtrar por categoria">
-      <button type="button" class="chip chip--ativo" data-filtro="" data-slug="" aria-pressed="true">Todas</button>
-      ${categorias.map((c) => `<button type="button" class="chip" data-filtro="${e(c)}" data-slug="${e(util.slugify(c))}" aria-pressed="false">${e(c)}</button>`).join("\n      ")}
-    </div>`
+  const abas = categorias.length
+    ? `<div class="chips chips--filtro chips--abas" role="group" aria-label="Filtrar por categoria">
+        <button type="button" class="chip chip--ativo" data-filtro="" data-slug="" aria-pressed="true">Todas</button>
+        ${categorias.map((c) => `<button type="button" class="chip" data-filtro="${e(c)}" data-slug="${e(util.slugify(c))}" aria-pressed="false">${e(c)}</button>`).join("\n        ")}
+      </div>`
     : "";
 
   const itens = produtos
-    .map((p, i) => cartao(ctx, p, { revelar: true, filtravel: true, alem: i >= MAXIMO_VISIVEL, sizes: TAMANHOS.grade }))
+    .map((p, i) => cartao(ctx, p, { revelar: true, filtravel: true, alem: i >= MAXIMO_VISIVEL, sizes: SIZES.colecao }))
     .join("\n");
-  const avisoPreco = nenhumPreco(ctx) ? `\n        <p class="colecao-aviso">${ROTULOS.semPrecoColecao}</p>` : "";
+  const avisoPreco = nenhumPreco(ctx) ? `\n      <p class="colecao-aviso">${ROTULOS.semPrecoColecao}</p>` : "";
   const maisPecas = produtos.length > MAXIMO_VISIVEL
     ? `<div class="colecao-mais">
       <button type="button" class="btn btn--secundario" data-mostrar-mais="grade-colecao">${ROTULOS.maisItens}</button>
@@ -246,14 +154,14 @@ function secaoColecao(ctx) {
   return `<section class="secao colecao" id="colecao" aria-labelledby="colecao-titulo">
   <div class="container">
     <div class="colecao-cabeca">
-      ${cabecaSecao(ctx, { id: "colecao-titulo", rotuloTexto: textos.rotulo, titulo: textos.titulo, extra: avisoPreco })}
-      ${chips}
+      <h2 id="colecao-titulo">${textoComMarca(ctx, textos.titulo)}</h2>${avisoPreco}
+      ${abas}
     </div>
     <div class="busca-resultado">
       <p class="busca-status" data-busca-status role="status"></p>
       <button type="button" class="link link--pequeno" data-busca-limpar hidden>Limpar busca</button>
     </div>
-    <ul class="grade" id="grade-colecao" data-revelar-lote>
+    <ul class="grade grade--colecao" id="grade-colecao" data-revelar-lote>
 ${itens}
     </ul>
     <div class="busca-vazia" data-busca-vazia hidden>
@@ -265,7 +173,59 @@ ${itens}
 </section>`;
 }
 
-// ---------- 4.6 Vídeos (faixa de stories) ----------
+// ---------- 4.3 Mosaico (4 quadros: três categorias e a faixa escura dos vídeos) ----------
+// Computador: o 1º quadro alto à esquerda ocupa duas linhas; o 2º e o 3º ficam lado a lado em
+// cima; o 4º é uma faixa larga escura embaixo deles, com texto e a foto à direita.
+// Celular: o 1º inteiro, o 2º e o 3º lado a lado, a faixa inteira.
+// Cada quadro é um link só. As categorias filtram a coleção (o app.js aplica sem recarregar).
+function destinoQuadro(ctx, m) {
+  if (m.filtro === "videos") {
+    return temVideos(ctx) ? { href: "#videos", texto: ROTULOS.verVideos } : { href: "#colecao", texto: ROTULOS.catalogo };
+  }
+  return { href: hrefCategoria(ctx, m.filtro), texto: ROTULOS.verPecas };
+}
+
+function secaoMosaico(ctx) {
+  const e = ctx.util.escapeHtml;
+  const quadros = lista(ctx.conteudo.mosaico);
+  if (quadros.length !== 4) return "";
+  const [alto, primeiro, segundo, faixa] = quadros;
+
+  const quadro = (m, classe, sizes) => {
+    const d = destinoQuadro(ctx, m);
+    return `<li class="mosaico-item ${classe}">
+        <a class="mosaico-quadro" href="${e(d.href)}" data-foto>
+          ${imagem(ctx, m.foto, { alt: "", sizes, classe: "mosaico-foto" })}
+          <span class="mosaico-texto"><span class="mosaico-titulo">${e(m.titulo)}</span><span class="mosaico-link">${d.texto}${ICONES.seta(16)}</span></span>
+        </a>
+      </li>`;
+  };
+
+  const df = destinoQuadro(ctx, faixa);
+  const largo = `<li class="mosaico-item mosaico-item--largo">
+        <a class="mosaico-faixa" href="${e(df.href)}">
+          <span class="mosaico-faixa-texto">
+            <span class="mosaico-titulo">${e(faixa.titulo)}</span>${ehTexto(faixa.texto) ? `
+            <span class="mosaico-frase">${textoComMarca(ctx, faixa.texto)}</span>` : ""}
+            <span class="mosaico-botao">${df.texto}${ICONES.seta(16)}</span>
+          </span>
+          <span class="mosaico-faixa-midia" data-foto>${imagem(ctx, faixa.foto, { alt: "", sizes: SIZES.mosaico, classe: "mosaico-foto" })}</span>
+        </a>
+      </li>`;
+
+  return `<section class="secao mosaico" aria-label="Categorias">
+  <div class="container">
+    <ul class="mosaico-grade">
+      ${quadro(alto, "mosaico-item--alto", SIZES.mosaicoAlto)}
+      ${quadro(primeiro, "mosaico-item--a", SIZES.mosaico)}
+      ${quadro(segundo, "mosaico-item--b", SIZES.mosaico)}
+      ${largo}
+    </ul>
+  </div>
+</section>`;
+}
+
+// ---------- 4.4 Vídeos (faixa de stories) ----------
 // O vídeo só recebe src pelo app.js quando o card é o mais visível (e, no celular, só depois
 // do primeiro gesto na faixa); antes disso fica a foto com um play discreto.
 // O link leva ao vídeo da peça (#video), não à foto.
@@ -276,7 +236,7 @@ function cardVideo(ctx, p) {
   return `      <li class="video-card" data-video-card>
         <a class="video-card-link" href="/p/${e(p.slug)}/#video">
           <span class="video-card-midia" data-foto>
-            ${imagem(ctx, fotoMaisAlta(ctx, p), { sizes: TAMANHOS.video })}
+            ${imagem(ctx, fotoMaisAlta(ctx, p), { sizes: layout.TAMANHOS.video })}
             <video muted playsinline loop preload="none" data-src="${e(src)}" aria-hidden="true" tabindex="-1" disablepictureinpicture disableremoteplayback></video>
             <span class="video-card-play" aria-hidden="true">${ICONES.playFill(14)}</span>
           </span>
@@ -298,11 +258,8 @@ function secaoVideos(ctx) {
       </div>`;
   return `<section class="secao videos" id="videos" aria-labelledby="videos-titulo">
   <div class="container">
-    <div class="cabeca-secao">
-      <div class="cabeca-titulos">
-        ${rotulo(ctx, "Vídeos")}
-        <h2 id="videos-titulo">Peças em vídeo</h2>
-      </div>
+    <div class="cabeca-centro">
+      <h2 id="videos-titulo">Peças em vídeo</h2>
       ${controles}
     </div>
     <ul class="videos-faixa" data-videos>
@@ -312,7 +269,7 @@ ${comVideo.map((p) => cardVideo(ctx, p)).join("\n")}
 </section>`;
 }
 
-// ---------- 4.7 Benefícios (painel bege com divisórias) ----------
+// ---------- 4.5 Benefícios (faixa com ícones entre duas linhas finas) ----------
 // Os 4 de conteudo.beneficios e, só quando o config tiver a condição, frete grátis,
 // parcelas sem juros e desconto no PIX.
 function beneficiosDoConfig(ctx) {
@@ -340,7 +297,7 @@ function secaoBeneficios(ctx) {
   if (!itens.length) return "";
   const hrefMedidas = util.linkWhats(config, layout.mensagemMedidas(config));
   const html = itens.map((b) => {
-    const corpo = `${iconeBeneficio(b.icone, 30)}<span class="beneficio-texto"><strong>${e(b.titulo)}</strong>${ehTexto(b.texto) ? `<span>${e(b.texto)}</span>` : ""}</span>`;
+    const corpo = `${iconeBeneficio(b.icone, 28)}<span class="beneficio-texto"><strong>${e(b.titulo)}</strong>${ehTexto(b.texto) ? `<span>${e(b.texto)}</span>` : ""}</span>`;
     if (b.link === "medidas") {
       return `<li><a class="beneficio beneficio--link" href="${e(hrefMedidas)}" target="_blank" rel="noopener" data-whats="medidas">${corpo}</a></li>`;
     }
@@ -356,8 +313,8 @@ function secaoBeneficios(ctx) {
 </section>`;
 }
 
-// ---------- 4.8 Receba as novidades ----------
-// No lugar do cadastro por e-mail da referência (não há servidor): um botão de WhatsApp com
+// ---------- 4.6 Receba as novidades ----------
+// No lugar do cadastro por e-mail (não há servidor): um botão de WhatsApp com
 // config.mensagemNovidades e o link para seguir no Instagram.
 function secaoNovidades(ctx) {
   const { config, util } = ctx;
@@ -388,7 +345,7 @@ function secaoNovidades(ctx) {
 </section>`;
 }
 
-// ---------- 4.9 Sobre ----------
+// ---------- 4.7 Sobre ----------
 function secaoSobre(ctx) {
   const { config, conteudo, util } = ctx;
   const e = util.escapeHtml;
@@ -402,7 +359,6 @@ function secaoSobre(ctx) {
   return `<section class="secao sobre" id="sobre" aria-labelledby="sobre-titulo" data-revelar>
   <div class="container sobre-grade">
     <div class="sobre-texto">
-      ${rotulo(ctx, "A loja")}
       <h2 id="sobre-titulo">${textoComMarca(ctx, s.titulo)}</h2>
       ${s.paragrafos.map((p) => `<p>${textoComMarca(ctx, p)}</p>`).join("\n      ")}
       ${ambiente}
@@ -446,7 +402,7 @@ ${html}
 </section>`;
 }
 
-// ---------- 4.10 Guia de medidas ----------
+// ---------- 4.8 Guia de medidas ----------
 function secaoMedidas(ctx) {
   const { config, conteudo, util } = ctx;
   const e = util.escapeHtml;
@@ -459,7 +415,6 @@ function secaoMedidas(ctx) {
   return `<section class="secao medidas" id="medidas" aria-labelledby="medidas-titulo" data-revelar>
   <div class="container medidas-grade">
     <div class="medidas-abre">
-      ${rotulo(ctx, "Tamanhos")}
       <h2 id="medidas-titulo">Guia de medidas</h2>
       <p class="medidas-intro">${textoComMarca(ctx, g.intro)}</p>
       <p class="medidas-ajuda">${linkWhats(ctx, { href: hrefAjuda, rotulo: ROTULOS.ajudaTamanho, tipo: "medidas" })}</p>
@@ -478,7 +433,7 @@ ${comoMedir}
 </section>`;
 }
 
-// ---------- 4.11 Dúvidas ----------
+// ---------- 4.9 Dúvidas ----------
 function itemFaq(ctx, item, indice) {
   return `      <details class="acordeao" id="duvida-${indice + 1}">
         <summary><span>${textoComMarca(ctx, item.pergunta)}</span>${ICONES.plus(16)}</summary>
@@ -494,7 +449,7 @@ function secaoDuvidas(ctx) {
 
   return `<section class="secao duvidas" id="duvidas" aria-labelledby="duvidas-titulo" data-revelar>
   <div class="container">
-    ${cabecaSecao(ctx, { id: "duvidas-titulo", rotuloTexto: "Ajuda", titulo: "Dúvidas frequentes" })}
+    <h2 id="duvidas-titulo">Dúvidas frequentes</h2>
     <div class="faq">
       <div class="faq-coluna">
 ${colunaA}
@@ -507,7 +462,7 @@ ${colunaB}
 </section>`;
 }
 
-// ---------- 4.12 Trocas (painel bege, imagem de ambiente no desktop) ----------
+// ---------- 4.10 Trocas (painel cinza claro, imagem de ambiente no desktop) ----------
 function secaoTrocas(ctx) {
   const t = ctx.conteudo.trocas;
   const ambiente = ehTexto(t.ambiente)
@@ -517,7 +472,6 @@ function secaoTrocas(ctx) {
   <div class="container">
     <div class="trocas-painel">
       <div class="trocas-texto">
-        ${rotulo(ctx, "Trocas")}
         <h2 id="trocas-titulo">Trocas e devoluções</h2>
         <p>${textoComMarca(ctx, t.resumo)}</p>
         <a class="link-seta" href="/trocas/">${ROTULOS.politica}${ICONES.seta(16)}</a>
@@ -533,10 +487,8 @@ module.exports = function renderHome(ctx) {
 
   const corpo = [
     secaoHero(ctx),
-    secaoCategorias(ctx),
-    secaoEstilos(ctx),
-    secaoPaineis(ctx),
     secaoColecao(ctx),
+    secaoMosaico(ctx),
     secaoVideos(ctx),
     secaoBeneficios(ctx),
     secaoNovidades(ctx),
@@ -576,7 +528,7 @@ module.exports = function renderHome(ctx) {
     descricao,
     caminho: "/",
     ogImagem: conteudo.hero.foto,
-    preload: preloadImagem(ctx, conteudo.hero.foto, SIZES.hero),
+    preload: preloadsHero(ctx),
     corpo,
     jsonLd,
     classeBody: "pagina-home"

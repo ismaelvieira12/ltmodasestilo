@@ -5,7 +5,8 @@
 //
 // Assinatura do contrato:
 //   layout({ ctx, titulo, descricao, caminho, ogImagem, corpo, jsonLd, classeBody }) -> string
-// Campos extras opcionais: preload ({ href, srcset, sizes } da imagem LCP, ver preloadImagem),
+// Campos extras opcionais: preload ({ href, srcset, sizes, media? } da imagem LCP, ver
+//   preloadImagem, ou uma lista deles, um por orientação de tela),
 //   noindex (true na 404), tituloCompleto (substitui "titulo | marca"),
 //   whats ({ href, tipo }: mensagem de WhatsApp da página, usada no topo, no menu e no rodapé;
 //   tipo "produto" na página da peça, "geral" no resto),
@@ -22,7 +23,7 @@ const ROTULOS = {
   contato: "Pedir no WhatsApp",
   catalogo: "Ver a coleção",
   politica: "Ler a política de trocas",
-  maisItens: "Mostrar mais peças",
+  maisItens: "Ver todas as peças",
   esgotado: "Avisar quando voltar",
   semPreco: "Preço pelo WhatsApp",
   semPrecoColecao: "Consulte os valores pelo WhatsApp.",
@@ -48,7 +49,7 @@ const BARRA_TOPO_PADRAO = ["Atendimento direto pelo WhatsApp", "Veja cada peça 
 // Mensagem do link de WhatsApp no estado vazio da busca ({termo} = o que a pessoa buscou).
 const MENSAGEM_BUSCA = "Olá! Procurei por \"{termo}\" no site e não encontrei. Vocês têm alguma peça assim?";
 
-const FONTES_PADRAO = { titulo: "DM Serif Display", texto: "Instrument Sans" };
+const FONTES_PADRAO = { titulo: "Jost", texto: "Instrument Sans" };
 const FALLBACK_FONTE = 'Arial, "Helvetica Neue", Helvetica, sans-serif';
 // Famílias com serifa caem para Georgia (e não para Arial) enquanto a fonte do Google não chega.
 const FAMILIAS_SERIFADAS = ["DM Serif Display"];
@@ -594,25 +595,7 @@ function conjuntoAmbiente(base, proporcao, larguras) {
   return larguras.map((l) => `${urlAmbiente(base, l, Math.round(l * proporcao[1] / proporcao[0]))} ${l}w`).join(", ");
 }
 
-// <picture> com recorte do celular e do desktop (proporções diferentes). Sempre lazy:
-// imagem externa nunca é o LCP.
-//   celular/desktop: { proporcao: [l, a], larguras: [...] }
-function pictureAmbiente(ctx, nome, { celular, desktop, sizesCelular = "100vw", sizesDesktop = "100vw", classe = "" }) {
-  const e = ctx.util.escapeHtml;
-  const amb = (ctx.conteudo.ambientes || {})[nome];
-  if (!amb) return "";
-  const base = amb.url;
-  const lCel = celular.larguras[celular.larguras.length - 1];
-  const aCel = Math.round(lCel * celular.proporcao[1] / celular.proporcao[0]);
-  const lDesk = desktop.larguras[desktop.larguras.length - 1];
-  const aDesk = Math.round(lDesk * desktop.proporcao[1] / desktop.proporcao[0]);
-  return `<picture>
-          <source media="(min-width: 1024px)" srcset="${e(conjuntoAmbiente(base, desktop.proporcao, desktop.larguras))}" sizes="${e(sizesDesktop)}" width="${lDesk}" height="${aDesk}">
-          <img${classe ? ` class="${e(classe)}"` : ""} src="${e(urlAmbiente(base, lCel, aCel))}" srcset="${e(conjuntoAmbiente(base, celular.proporcao, celular.larguras))}" sizes="${e(sizesCelular)}" width="${lCel}" height="${aCel}" alt="${e(amb.alt)}" loading="lazy" decoding="async" data-fade>
-        </picture>`;
-}
-
-// <img> simples de ambiente (uma proporção só).
+// <img> de ambiente (uma proporção só). Sempre lazy: imagem externa nunca é o LCP.
 function imagemAmbiente(ctx, nome, { proporcao, larguras, sizes = "100vw", classe = "" }) {
   const e = ctx.util.escapeHtml;
   const amb = (ctx.conteudo.ambientes || {})[nome];
@@ -620,25 +603,6 @@ function imagemAmbiente(ctx, nome, { proporcao, larguras, sizes = "100vw", class
   const l = larguras[larguras.length - 1];
   const a = Math.round(l * proporcao[1] / proporcao[0]);
   return `<img${classe ? ` class="${e(classe)}"` : ""} src="${e(urlAmbiente(amb.url, l, a))}" srcset="${e(conjuntoAmbiente(amb.url, proporcao, larguras))}" sizes="${e(sizes)}" width="${l}" height="${a}" alt="${e(amb.alt)}" loading="lazy" decoding="async" data-fade>`;
-}
-
-// Recorte de rosto e tronco num círculo: a foto (miniatura de 640) é ampliada pelo zoom e
-// deslocada para o rosto ficar no centro horizontal e a 32% da altura do círculo.
-// rosto = [x, y] em % da foto. Calculado no build com as dimensões reais do arquivo.
-function fotoCirculo(ctx, caminho, rosto, zoom) {
-  const e = ctx.util.escapeHtml;
-  const info = infoImagem(ctx, caminho);
-  const proporcao = info.altura / info.largura;
-  const z = Math.max(1, Number(zoom) || 1.7);
-  const [rx, ry] = Array.isArray(rosto) ? rosto : [50, 20];
-  let esquerda = 50 - (rx / 100) * z * 100;
-  let topo = 32 - (ry / 100) * z * proporcao * 100;
-  // A foto precisa cobrir o círculo inteiro.
-  esquerda = Math.min(0, Math.max(100 - z * 100, esquerda));
-  topo = Math.min(0, Math.max(100 - z * proporcao * 100, topo));
-  const src = srcLeve(ctx, caminho);
-  const largura = info.miniatura ? info.miniatura.largura : info.largura;
-  return `<img src="${e(src)}" alt="" width="${largura}" height="${Math.round(largura * proporcao)}" loading="lazy" decoding="async" style="width:${(z * 100).toFixed(1)}%;left:${esquerda.toFixed(1)}%;top:${topo.toFixed(1)}%">`;
 }
 
 // Tabela de medidas (seção 3.5): cabeçalho em superfície, primeira coluna fixa com 5+ colunas.
@@ -763,10 +727,12 @@ function buscaHtml() {
   </div>`;
 }
 
-// Cabeçalho claro (seção 3.3 do DESIGN.md).
+// Cabeçalho claro (seção 3.3 do DESIGN.md). Na home ele fica transparente sobre o banner e
+// ganha fundo quando a página rola (classe topo-solido no body, posta pelo app.js).
 //   Celular: Menu, wordmark, Buscar, Favoritos e o ícone verde do WhatsApp.
-//   Desktop: wordmark à esquerda, navegação no meio; Buscar, Favoritos, Instagram e
-//   "Pedir no WhatsApp" à direita.
+//   Desktop de 1024 a 1279px: wordmark à esquerda, navegação no meio, ícones à direita.
+//   Desktop a partir de 1280px: navegação à esquerda, wordmark no centro; Buscar, Favoritos,
+//   Instagram e "Pedir no WhatsApp" à direita (como na referência AERIS).
 function topoHtml(ctx, ehHome, whats, ancoraMedidas) {
   const { config, util } = ctx;
   const e = util.escapeHtml;
@@ -1033,9 +999,11 @@ function layout({ ctx, titulo, descricao, caminho, ogImagem, corpo, jsonLd, clas
   const temLogo = ehTexto(idt.logo);
 
   const whatsPagina = whats && whats.href ? whats : { href: util.linkWhats(config, config.mensagemGeral), tipo: "geral" };
-  const preloadHtml = preload && preload.href
-    ? `\n  <link rel="preload" as="image" href="${e(preload.href)}"${preload.srcset ? ` imagesrcset="${e(preload.srcset)}" imagesizes="${e(preload.sizes || "100vw")}"` : ""} fetchpriority="high">`
-    : "";
+  // preload: um objeto ou uma lista (o banner da home tem uma foto por orientação de tela, com media).
+  const preloadHtml = (Array.isArray(preload) ? preload : [preload])
+    .filter((p) => p && p.href)
+    .map((p) => `\n  <link rel="preload" as="image" href="${e(p.href)}"${p.srcset ? ` imagesrcset="${e(p.srcset)}" imagesizes="${e(p.sizes || "100vw")}"` : ""}${p.media ? ` media="${e(p.media)}"` : ""} fetchpriority="high">`)
+    .join("");
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -1127,6 +1095,6 @@ module.exports.componentes = {
   botaoWhats, linkWhats, cartao, corDaPeca, tabela, segmentos, migalhas, altFoto,
   imagem, preloadImagem, srcLeve, infoImagem, fotoMaisAlta, precoCurto,
   comMarca, textoComMarca, arrobaInstagram, nenhumPreco,
-  pictureAmbiente, imagemAmbiente, fotoCirculo, categoriasDasPecas, hrefCategoria, atributoWhats,
+  imagemAmbiente, categoriasDasPecas, hrefCategoria, atributoWhats,
   botaoFavorito, hrefNavegacao, temVideos
 };

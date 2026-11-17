@@ -8,8 +8,9 @@ const fs = require("fs");
 const path = require("path");
 
 // Pastas geradas por scripts/miniaturas.ps1 (npm run fotos). A de 640 é a "leve" (pôster,
-// miniatura da galeria); a de 828 só existe para fotos com mais de 911px de largura.
-const PASTAS_MINIATURAS = ["640", "828"];
+// miniatura da galeria); a de 828 só existe para fotos com mais de 911px de largura e a de
+// 1280 só para as mais largas que 1408px (o banner de computador).
+const PASTAS_MINIATURAS = ["640", "828", "1280"];
 const PASTA_MINIATURAS = PASTAS_MINIATURAS[0];
 // Fotos externas (URL) e arquivos que não deu para ler entram como 3:4, o formato do catálogo.
 const DIMENSOES_PADRAO = { largura: 1200, altura: 1600 };

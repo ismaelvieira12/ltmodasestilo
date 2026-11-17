@@ -1,7 +1,8 @@
-# Gera versoes menores das fotos de img/ em img/640/ e img/828/ (grade, miniaturas e celular).
+# Gera versoes menores das fotos de img/ em img/640/, img/828/ e img/1280/ (grade, miniaturas,
+# celular e o banner de tela cheia; a de 1280 so sai para fotos com mais de 1408px de largura).
 # Uso: npm run fotos   (ou: powershell -ExecutionPolicy Bypass -File scripts/miniaturas.ps1)
 # Rode de novo sempre que adicionar ou trocar fotos. Fotos ja convertidas sao puladas.
-param([int[]]$Larguras = @(640, 828), [int]$Qualidade = 70)
+param([int[]]$Larguras = @(640, 828, 1280), [int]$Qualidade = 70)
 
 Add-Type -AssemblyName System.Drawing
 $raiz = Split-Path -Parent $PSScriptRoot

@@ -4,7 +4,7 @@
 //
 // Blocos: 1 utm/ref, 2 mensagens e links de WhatsApp, 3 Pixel da Meta, 4 tamanho,
 // 5 barra fixa do CTA, 6 faixas com indicador, 7 galeria do desktop, 8 menu do celular,
-// 9 revelação suave, 10 imagens, 11 coleção (busca, filtro, mostrar mais, prefetch, fotos do topo),
+// 9 revelação suave, 10 imagens, 11 coleção (busca, filtro, mostrar mais, prefetch, cabeçalho sobre o banner),
 // 12 blocos de informação, 13 vídeo da peça, 14 faixa de vídeos da home, 15 favoritos.
 // Sintaxe até ES2017 (WebViews Android antigas): sem optional chaining nem nullish coalescing.
 
@@ -604,6 +604,8 @@ document.documentElement.classList.add("js", "app");
     if (!formBusca) return;
     formBusca.classList.toggle("busca--aberta", aberta);
     if (linhaBusca) linhaBusca.classList.toggle("topo-busca--aberta", aberta);
+    // Na home, com a busca aberta o cabeçalho ganha fundo mesmo sobre o banner.
+    document.body.classList.toggle("busca-aberta", aberta);
     if (botaoAbrirBusca) botaoAbrirBusca.setAttribute("aria-expanded", aberta ? "true" : "false");
   }
   if (botaoAbrirBusca && formBusca) {
@@ -700,86 +702,18 @@ document.documentElement.classList.add("js", "app");
     ligarSetas(faixa, itens, c.querySelector("[data-carrossel-anterior]"), c.querySelector("[data-carrossel-proxima]"));
   });
 
-  // ---------- 11b. Fotos do topo (carrossel) ----------
-  // Troca sozinho a cada 6 s, só sem movimento reduzido; pausa com o mouse em cima, com o foco
-  // dentro, com a aba escondida e pelo botão de pausa. A numeração 01, 02, 03 leva a qualquer
-  // foto; no celular, arrastar também (scroll-snap). A foto atual vem de um IntersectionObserver.
-  function iniciarBanner(raiz) {
-    var faixa = raiz.querySelector("[data-banner-faixa]");
-    var slides = todos("[data-banner-slide]", raiz);
-    var controles = raiz.querySelector("[data-banner-controles]");
-    if (!faixa || slides.length < 2 || !controles || !temIO) return;
-    controles.hidden = false;
-    var pontos = todos("[data-banner-ponto]", controles);
-    var pausa = controles.querySelector("[data-banner-pausa]");
-    var INTERVALO = 6000;
-    var atual = 0;
-    var tocando = !reduzMovimento;
-    var mouseEmCima = false;
-    var focoDentro = false;
-    var relogio = null;
-
-    function irPara(indice, suave) {
-      var n = (indice + slides.length) % slides.length;
-      var destino = n * faixa.clientWidth;
-      if (suave && !reduzMovimento && "scrollBehavior" in document.documentElement.style) {
-        faixa.scrollTo({ left: destino, behavior: "smooth" });
-      } else {
-        faixa.scrollLeft = destino;
-      }
-    }
-
-    function agendar() {
-      clearTimeout(relogio);
-      if (!tocando || mouseEmCima || focoDentro || document.hidden) return;
-      relogio = setTimeout(function () { irPara(atual + 1, true); }, INTERVALO);
-    }
-
-    function atualizarPausa() {
-      if (!pausa) return;
-      pausa.setAttribute("data-estado", tocando ? "tocando" : "pausado");
-      pausa.setAttribute("aria-label", tocando ? "Pausar fotos" : "Tocar fotos");
-    }
-
-    var observadorSlides = new IntersectionObserver(function (entradas) {
-      entradas.forEach(function (en) {
-        if (en.intersectionRatio < 0.6) return;
-        atual = slides.indexOf(en.target);
-        pontos.forEach(function (p, i) {
-          if (i === atual) p.setAttribute("aria-current", "true");
-          else p.removeAttribute("aria-current");
-        });
-      });
-      agendar();
-    }, { root: faixa, threshold: [0, 0.6, 1] });
-    slides.forEach(function (s) { observadorSlides.observe(s); });
-
-    pontos.forEach(function (p, i) { p.addEventListener("click", function () { irPara(i, true); }); });
-    var anterior = controles.querySelector("[data-banner-anterior]");
-    var proximo = controles.querySelector("[data-banner-proximo]");
-    if (anterior) anterior.addEventListener("click", function () { irPara(atual - 1, true); });
-    if (proximo) proximo.addEventListener("click", function () { irPara(atual + 1, true); });
-    if (pausa) {
-      pausa.addEventListener("click", function () {
-        tocando = !tocando;
-        atualizarPausa();
-        agendar();
-      });
-    }
-    raiz.addEventListener("pointerenter", function (ev) { if (ev.pointerType === "mouse") { mouseEmCima = true; agendar(); } });
-    raiz.addEventListener("pointerleave", function (ev) { if (ev.pointerType === "mouse") { mouseEmCima = false; agendar(); } });
-    raiz.addEventListener("focusin", function () { focoDentro = true; agendar(); });
-    raiz.addEventListener("focusout", function (ev) {
-      if (ev.relatedTarget && raiz.contains(ev.relatedTarget)) return;
-      focoDentro = false;
-      agendar();
-    });
-    document.addEventListener("visibilitychange", agendar);
-    atualizarPausa();
-    agendar();
+  // ---------- 11b. Cabeçalho sobre o banner da home ----------
+  // Transparente enquanto o alto do banner está na tela; com fundo (body.topo-solido) assim que
+  // a página rola. A sentinela é um traço invisível no alto do banner, vigiado por um
+  // IntersectionObserver (sem listener de rolagem). Sem IntersectionObserver, fundo sempre.
+  var sentinela = document.querySelector("[data-topo-sentinela]");
+  if (sentinela && temIO) {
+    new IntersectionObserver(function (entradas) {
+      document.body.classList.toggle("topo-solido", !entradas[0].isIntersecting);
+    }).observe(sentinela);
+  } else if (sentinela) {
+    document.body.classList.add("topo-solido");
   }
-  var banner = document.querySelector("[data-banner]");
-  if (banner) iniciarBanner(banner);
 
   // ---------- 11c. Barra de topo: no celular, uma frase por vez ----------
   // A cada 4 s, só sem movimento reduzido; pausa com o mouse em cima ou foco dentro.

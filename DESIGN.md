@@ -1,23 +1,23 @@
 ---
-name: Referência, edição ltmodasestilo
-description: Loja de moda feminina com cara de marca premium, a partir da imagem de referência escolhida pela dona (modelo "LUNORA Fashion"), adaptada aos dados reais. Fundo creme, painéis bege, cartões brancos, tinta quase preta nos botões e no rodapé, títulos numa serifa de alto contraste com rótulos pequenos em caixa alta, e um único acento verde-folha reservado ao WhatsApp. Compra pelo WhatsApp, sem carrinho.
+name: AERIS, edição ltmodasestilo
+description: Loja de moda feminina no estilo da referência "AERIS" escolhida pela dona em 17/11/2026. Banner de tela cheia com o cabeçalho transparente por cima, coleção com abas, mosaico de quatro quadros, fundo branco quase puro, títulos numa sem serifa geométrica em caixa alta espaçada, tinta quase preta nos botões e no rodapé, e um único acento verde-folha reservado ao WhatsApp. A cor vem das roupas. Compra pelo WhatsApp, sem carrinho.
 colors:
-  fundo: "#f6f4f0"
-  superficie: "#f2f0eb"
-  painel: "#efebe5"
-  cartao: "#fdfdfc"
-  linha: "#dbd9d5"
-  borda: "#868482"
-  tinta: "#151413"
-  tinta-suave: "#595755"
+  fundo: "#fbfbfa"
+  superficie: "#f7f7f5"
+  painel: "#f2f2f1"
+  cartao: "#fefefe"
+  linha: "#e0e0df"
+  borda: "#898988"
+  tinta: "#161616"
+  tinta-suave: "#5b5b5a"
   acento: "#1e6b43"
-  acento-forte: "#1c5a39"
-  texto-botao: "#f6f4f0"
-  escuro: "#151413"
-  escuro-linha: "#42413f"
-  sobre-escuro: "#f6f4f0"
-  sobre-escuro-suave: "#aeaca9"
-  veu-forte: "rgba(21, 20, 19, 0.82)"
+  acento-forte: "#1c5a3a"
+  texto-botao: "#fbfbfa"
+  escuro: "#161616"
+  escuro-linha: "#444444"
+  sobre-escuro: "#fbfbfa"
+  sobre-escuro-suave: "#b2b2b1"
+  veu-forte: "rgba(22, 22, 22, 0.82)"
 typography:
   wordmark:
     fontFamily: IBM Plex Sans
@@ -31,17 +31,25 @@ typography:
     letterSpacing: 0.34em
     textTransform: uppercase
   headline-display:
-    fontFamily: DM Serif Display
-    fontSize: clamp(40px, 1.1rem + 4vw, 72px)
-    fontWeight: 400
+    fontFamily: Jost
+    fontSize: clamp(30px, 1.25rem + 2.6vw, 68px)
+    fontWeight: 500
     lineHeight: 1.04
-    letterSpacing: -0.015em
+    letterSpacing: 0.01em
+    textTransform: uppercase
+  headline-secao-home:
+    fontFamily: Jost
+    fontSize: clamp(20px, 1.05rem + 0.7vw, 26px)
+    fontWeight: 500
+    lineHeight: 1.2
+    letterSpacing: 0.08em
+    textTransform: uppercase
   headline-lg:
-    fontFamily: DM Serif Display
-    fontSize: clamp(30px, 1.35rem + 1.7vw, 44px)
-    fontWeight: 400
-    lineHeight: 1.08
-    letterSpacing: -0.01em
+    fontFamily: Jost
+    fontSize: clamp(24px, 1.2rem + 1vw, 34px)
+    fontWeight: 500
+    lineHeight: 1.15
+    letterSpacing: -0.005em
   label-sm:
     fontFamily: Instrument Sans
     fontSize: 12px
@@ -72,10 +80,11 @@ components:
     backgroundColor: "{colors.tinta}"
     textColor: "{colors.fundo}"
     rounded: "{rounded.controle}"
-  cartao-categorias:
-    backgroundColor: "{colors.cartao}"
-    rounded: "{rounded.cartao}"
-  painel-bege:
+  faixa-escura-mosaico:
+    backgroundColor: "{colors.escuro}"
+    textColor: "{colors.sobre-escuro}"
+    rounded: "{rounded.superficie}"
+  painel-claro:
     backgroundColor: "{colors.painel}"
     rounded: "{rounded.superficie}"
   foto-peca:
@@ -88,7 +97,34 @@ components:
     rounded: "{rounded.circulo}"
 ---
 
-# DESIGN.md: direção "Referência"
+# DESIGN.md: direção "AERIS" (17/11/2026)
+
+## 0. Direção atual: AERIS
+
+A dona mandou três referências de lojas de moda (LUMEN, AERIS e FORMA), escolheu a segunda ("layout 2") e gerou duas fotos próprias para o banner: `img/banner-pagina-web.jpg` (16:9, computador) e `img/banner-mobile.jpg` (9:16, celular), uma modelo de conjunto vermelho numa sala clara com parede bege lisa. Esta seção vale por cima das seções 1 a 8 abaixo, que descrevem a direção anterior ("Referência") e continuam valendo no que não for citado aqui.
+
+Leitura: reformulação visual da vitrine de uma marca de moda feminina, para quem chega pelo Instagram, quase sempre no celular, com a linguagem editorial e limpa da AERIS (foto de tela cheia, sem serifa em caixa alta, muito branco). Conteúdo, endereços, âncoras e caminho de compra foram mantidos. Dials: variação 6, movimento 4, densidade 4.
+
+O que mudou:
+
+- **Identidade** (`config.identidade`): fundo `#fbfbfa` (branco quase puro, no lugar do creme), tinta `#161616`, títulos em **Jost 500** no lugar da DM Serif Display. O cinza claro das fotos e dos painéis e o branco dos cartões continuam saindo do fundo no build. A cor da página vem das roupas: a interface fica em branco, cinza e preto, e o verde continua só no WhatsApp. Para voltar: `corFundo "#f6f4f0"`, `corTinta "#151413"`, `fonteTitulo "DM Serif Display"`.
+- **Títulos**: na home, os h2 ficam em caixa alta com 0.08em de entreletra e tamanho contido (20 a 26px), como o "NOVINKI" da AERIS; nas outras páginas (peça, trocas, 404), caixa normal, porque lá há títulos longos. O nome da marca dentro de um título fica sempre na IBM Plex Sans e em minúsculas (na Jost o "l" é um traço reto e "ltmodasestilo" viraria "Itmodasestilo").
+- **Cabeçalho**: na home ele fica transparente sobre o banner e ganha fundo e hairline assim que a página rola (`body.topo-solido`, posta pelo app.js com um IntersectionObserver numa sentinela no alto do banner) ou a busca abre. A tinta continua escura porque a parede do banner é clara. A partir de 1280px: navegação à esquerda, wordmark no centro exato, ícones e "Pedir no WhatsApp" à direita. De 1024 a 1279px e no celular, o arranjo anterior (não cabe tudo com o logo no centro).
+- **Banner de tela cheia** (substitui o topo dividido, os destaques e o carrossel de 3 fotos): altura da tela menos a barra de topo, em `svh`. Tela deitada: foto 16:9, texto à esquerda centrado na altura, largura `min(40rem, 52vw)` para nunca encostar na modelo. Tela em pé: foto 9:16, texto em cima; no celular a frase e o "Ver vídeos" somem para o botão caber acima da cabeça da modelo (medido: em 375x667 o botão termina na linha do cabelo). Uma foto por orientação (`<picture>` com `media="(orientation: landscape)"`), cada uma com seu preload. Campos: `hero.foto`, `hero.fotoCelular` (novo); saíram `hero.fotos` e `hero.destaques` (o build recusa e explica).
+- **Coleção logo abaixo do banner**: título "COLEÇÃO" centrado, a frase sobre preço e as abas de categoria em texto, com traço sob a ativa (as mesmas `chips` de antes, com outra aparência). 6 colunas a partir de 1280px, 3 de 640 a 1279px, 2 no celular. Mostra 6 peças e "Ver todas as peças"; abas e busca mostram todas. Sem JS, todas aparecem.
+- **Mosaico** (`conteudo.mosaico`, substitui `categorias`, `estilos` e `paineis`): exatamente 4 quadros. Desktop: o 1º alto à esquerda (duas linhas), o 2º e o 3º em cima, e o 4º uma faixa larga escura com título, frase, botão claro e a foto à direita. Celular: o 1º inteiro, o 2º e o 3º lado a lado, a faixa inteira. Hoje: pantalona rosa, short azul, vestido vermelho e "Cada peça em vídeo" com o conjunto verde. O build confere se cada `filtro` é uma categoria real.
+- **Vídeos**: título centrado; os controles ficam à direita na mesma linha no desktop e embaixo do título no celular.
+- **Benefícios**: sem painel bege; quatro itens entre duas linhas finas.
+- **Rótulos**: só o do banner. Os rótulos acima de cada seção saíram (a AERIS não usa e o excesso deixava o ritmo repetitivo).
+- **Imagens**: a pasta `img/1280/` entrou nas miniaturas (`npm run fotos`), só para fotos mais largas que 1408px (o banner do computador). Os PNGs originais do banner ficam em `referencias/banners-originais/`, fora do site.
+
+Ordem da home agora: barra de topo, cabeçalho (transparente), banner, coleção, mosaico, vídeos, benefícios, receba as novidades, sobre, depoimentos (só com depoimento real), guia de medidas, dúvidas, trocas, rodapé.
+
+Contrastes da identidade nova (impressos pelo build): tinta sobre fundo 17,48:1; tinta suave sobre fundo 6,59:1, sobre superfície 6,34:1 e sobre painel 6,10:1; texto do botão sobre o verde 6,26:1; borda sobre fundo 3,40:1; texto secundário do rodapé 8,50:1. Texto do banner (tinta) sobre a parede bege da foto: acima de 10:1.
+
+---
+
+# Direção anterior: "Referência" (rodada 4)
 
 Documento de referência para quem mexe em `src/`, `assets/css/style.css`, `assets/js/app.js`, `build.js` e nos campos de `dados/`. Substitui a direção "Vitrine" (rodada 3). A dona pediu "melhore ainda mais o site usando a imagem referência"; a imagem fica em `referencias/` (fora de `img/`, não vai ao ar) e é um modelo de loja de moda premium ("LUNORA Fashion"). Esta direção segue a estrutura e a estética dela, adaptadas aos dados reais da ltmodasestilo.
 

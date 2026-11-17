@@ -107,7 +107,7 @@ https://ltmodasestilo.vercel.app/p/conjunto-cropped-short-faixa-azul/
 - `corAcento`: cor dos botões de WhatsApp, em hexadecimal. Ex: `"#0e7a41"`. Vazio: verde padrão.
 - `corFundo`: cor de fundo das páginas. Ex: `"#ffffff"`.
 - `corTinta`: cor dos textos. Ex: `"#1a1a1a"`.
-- `fonteTitulo` e `fonteTexto`: nome exato da família no Google Fonts (https://fonts.google.com). Hoje: `"DM Serif Display"` nos títulos (a fonte elegante com serifa, como a da imagem de referência) e `"Instrument Sans"` nos textos. O site carrega a fonte direto do Google. O nome da marca no topo e no rodapé usa outra fonte, de propósito: nela o "l" de ltmodasestilo tem uma curvinha embaixo e não se confunde com "I".
+- `fonteTitulo` e `fonteTexto`: nome exato da família no Google Fonts (https://fonts.google.com). Hoje: `"Jost"` nos títulos (uma sem serifa geométrica, em caixa alta nas seções da home, como na referência AERIS) e `"Instrument Sans"` nos textos. Para voltar ao visual anterior, use `"DM Serif Display"` nos títulos, `corFundo: "#f6f4f0"` e `corTinta: "#151413"`. O site carrega a fonte direto do Google. O nome da marca no topo e no rodapé usa outra fonte, de propósito: nela o "l" de ltmodasestilo tem uma curvinha embaixo e não se confunde com "I".
 - `subtituloMarca` (fora do bloco `identidade`, perto de `marca`): a linha pequena embaixo do nome da marca no topo e no rodapé. Hoje: "Moda feminina".
 
 Sobre as cores: o build calcula o contraste. Se o texto do botão não ficar legível sobre `corAcento`, o build escurece o acento sozinho e avisa no terminal qual cor usou. As cores finais e os contrastes aparecem no terminal a cada build. O fundo precisa ser mais claro que a tinta (o site não tem tema escuro).
@@ -116,7 +116,7 @@ Sobre as cores: o build calcula o contraste. Se o texto do botão não ficar leg
 
 ## Passo 2: as peças (dados/produtos.js)
 
-O arquivo é uma lista de blocos `{ ... }`, um por peça, separados por vírgula. Para cadastrar uma peça nova, copie um bloco inteiro (da abertura `{` ao fechamento `},`), cole antes do `];` final e troque os valores. Para remover, apague o bloco. A ordem no arquivo é a ordem na home; peças com `destaque: true` aparecem antes das outras. A home mostra até 12 peças e um botão "Mostrar mais peças" para o resto.
+O arquivo é uma lista de blocos `{ ... }`, um por peça, separados por vírgula. Para cadastrar uma peça nova, copie um bloco inteiro (da abertura `{` ao fechamento `},`), cole antes do `];` final e troque os valores. Para remover, apague o bloco. A ordem no arquivo é a ordem na home; peças com `destaque: true` aparecem antes das outras. A home mostra 6 peças e um botão "Ver todas as peças" para o resto.
 
 Campos de cada peça:
 
@@ -128,7 +128,7 @@ Campos de cada peça:
 - `destaque`: `true` para aparecer primeiro na home. Opcional.
 - `cor`: cor da peça, texto livre. Entra na mensagem do WhatsApp e na busca.
 - `corHex`: a mesma cor em código, para a bolinha colorida ao lado do nome da cor. Ex: `"#e63357"`. As cores atuais foram medidas nas suas fotos. Numa peça nova, use um conta-gotas de cores (qualquer editor de imagem tem) sobre o tecido na foto.
-- `categoria`: grupo da peça. Hoje são três: `"Conjuntos com short"`, `"Conjuntos com pantalona"` e `"Vestidos"`. Ela alimenta os círculos de categoria, as fotos de "Encontre seu estilo", os filtros e a busca da home, o rótulo acima do nome na página da peça e a vitrine "Você também pode gostar". Escreva sempre igual (mesma grafia e maiúsculas) nas peças da mesma categoria. Uma categoria nova só ganha círculo e foto própria se você também acrescentar em `categorias` e `estilos` no `conteudo.js`.
+- `categoria`: grupo da peça. Hoje são três: `"Conjuntos com short"`, `"Conjuntos com pantalona"` e `"Vestidos"`. Ela alimenta as abas e a busca da coleção na home, os quadros do mosaico, o rótulo acima do nome na página da peça e a vitrine "Você também pode gostar". Escreva sempre igual (mesma grafia e maiúsculas) nas peças da mesma categoria. Uma categoria nova ganha aba sozinha; para ganhar um quadro com foto no mosaico, troque um dos quadros do `mosaico` no `conteudo.js`.
 - `tamanhos`: lista com pelo menos um tamanho, na ordem de exibição. Ex: `["P", "M", "G", "GG"]` ou `["36", "38", "40", "42"]`. Obrigatório.
 - `esgotados`: opcional. Lista dos tamanhos que acabaram, escritos exatamente como em `tamanhos`. Ex: `esgotados: ["P", "GG"],`. Esses tamanhos aparecem riscados e não podem ser escolhidos. Se todos os tamanhos estiverem na lista, o botão da peça vira "Avisar quando voltar" e usa `mensagemEsgotado`. Quando o tamanho voltar, tire da lista e publique de novo. Para esconder a peça de vez, remova o bloco.
 - `fotos`: lista de 1 a 5 fotos; a primeira é a principal, aparece no card da home e é a imagem usada quando o link da peça é compartilhado. Use `"img/nome-do-arquivo.jpeg"` apontando para a pasta `img/`. Obrigatório. Depois de colocar fotos novas, rode `npm run fotos` (veja o Passo 4).
@@ -161,22 +161,19 @@ O que o build só avisa (continua, mas confira): peças sem preço; mais de 5 fo
 Abra `dados/conteudo.js`. Cada bloco tem um comentário explicando os campos. Os blocos, na ordem em que aparecem na home:
 
 - `barraTopo`: as frases curtas da faixa preta no alto de todas as páginas (no celular revezam, uma por vez). Use só frases verdadeiras. O `aviso` do `config.js`, quando preenchido, entra como primeira frase.
-- `navegacao`: os links do meio do cabeçalho no computador e do menu no celular (Coleção, Conjuntos, Vestidos, Vídeos, Medidas, Trocas).
-- `hero`: o topo da home, com texto à esquerda e foto grande à direita no computador.
+- `navegacao`: os links do cabeçalho no computador e do menu no celular (Coleção, Conjuntos, Vestidos, Vídeos, Medidas, Trocas). Em telas largas eles ficam à esquerda, com o nome da marca no centro.
+- `hero`: o banner de tela cheia, o primeiro bloco da home. A foto ocupa a tela inteira, o cabeçalho fica transparente por cima dela e o texto aparece em letra escura sobre a foto.
   - `rotulo`: a linha pequena em letras maiúsculas acima do título (hoje "Conjuntos e vestidos").
-  - `titulo`: frase principal, curta (uma ou duas linhas no celular).
-  - `subtitulo`: frase de apoio. O build avisa se passar de 20 palavras.
-  - `foto`: a primeira foto do topo, hoje `"img/foto6.jpeg"`. Obrigatória. Também é a imagem usada quando alguém compartilha o link da home ou da página de trocas.
-  - `fotos`: as outras fotos que revezam no topo (hoje o conjunto azul e o vestido vermelho), com a numeração 01, 02, 03. Cada foto leva à peça que aparece nela.
-  - `ctaTexto`: texto do botão preto, padrão `"Ver a coleção"`. Ao lado dele fica o link "Ver vídeos".
-  - `destaques`: os 3 itens com ícone logo abaixo dos botões (atendimento, vídeo de cada peça, ajuda com o tamanho).
-- `categorias`: os círculos com foto no cartão branco logo abaixo do topo (Coleção, Conjuntos com short, Conjuntos com pantalona, Vestidos). O último círculo, preto, leva aos vídeos. Cada círculo tem a foto e o ajuste de enquadramento do rosto.
-- `estilos`: a seção "Compre por categoria / Encontre seu estilo", com quatro fotos altas e o nome da categoria por cima.
-- `paineis`: os dois painéis bege lado a lado ("Cores vivas para usar agora" e "Cada peça em vídeo").
-- `colecao`: os títulos da vitrine com todas as peças ("Escolha a sua peça"), onde ficam os filtros e o resultado da busca.
-- `beneficios`: a faixa de vantagens com ícones, em painel bege. Os itens de frete grátis, parcelas e desconto no PIX aparecem sozinhos quando você preencher `frete` e `pagamento` no `config.js`; não escreva esses itens à mão.
+  - `titulo`: frase principal, curta (no máximo duas linhas no computador, umas 30 letras).
+  - `subtitulo`: frase de apoio. O build avisa se passar de 20 palavras. No celular ela não aparece, para não cobrir a foto.
+  - `foto`: a foto do computador, deitada (16:9), hoje `"img/banner-pagina-web.jpg"`. Obrigatória. O texto fica à esquerda, então a metade esquerda da foto precisa ser clara e lisa (parede, céu, fundo de estúdio), com a modelo à direita. Também é a imagem usada quando alguém compartilha o link da home ou da página de trocas.
+  - `fotoCelular`: a foto do celular, em pé (9:16), hoje `"img/banner-mobile.jpg"`. O texto fica em cima, então o terço de cima da foto precisa ser claro e liso, com a modelo da metade para baixo. Deixe `""` para usar a foto do computador também no celular.
+  - `ctaTexto`: texto do botão preto, padrão `"Ver a coleção"`. Ao lado dele fica o link "Ver vídeos" (no celular, só o botão).
+- `colecao`: o título da vitrine com todas as peças (hoje "Coleção"), logo abaixo do banner. Embaixo do título ficam as abas de categoria (Todas, Conjuntos com short...), que saem sozinhas das categorias das peças. A vitrine mostra 6 peças e o botão "Ver todas as peças"; as abas e a busca sempre mostram todas.
+- `mosaico`: os quatro quadros com foto logo abaixo da coleção. O 1º é o quadro alto da esquerda, o 2º e o 3º ficam lado a lado em cima, e o 4º é a faixa larga escura embaixo deles, com uma frase e um botão. Cada quadro tem `titulo`, `filtro` (o nome de uma categoria, igual ao de `produtos.js`, ou `"videos"` para levar à faixa de vídeos), `foto` e, só no 4º, `texto`. Use sempre 4 quadros, ou `[]` para esconder o mosaico.
+- `beneficios`: a faixa de vantagens com ícones, entre duas linhas finas. Os itens de frete grátis, parcelas e desconto no PIX aparecem sozinhos quando você preencher `frete` e `pagamento` no `config.js`; não escreva esses itens à mão.
 - `novidades`: o bloco "Receba as novidades", com foto ao lado e o botão "Quero receber novidades", que abre o WhatsApp com a mensagem de `mensagemNovidades` do `config.js`. Quem mandar essa mensagem quer ser avisado de peças novas: guarde esses contatos numa etiqueta do WhatsApp Business ou numa lista de transmissão.
-- `ambientes`: as imagens de clima usadas nos painéis e na faixa de trocas (cabides, roupas dobradas). Elas vêm do Unsplash, um banco de fotos com licença gratuita que permite uso comercial, e são carregadas direto de lá. Nunca use imagem de ambiente para mostrar uma peça à venda, para a cliente não confundir com o seu estoque. Para trocar, copie o endereço de outra foto gratuita do Unsplash (sem o `?` e o que vem depois).
+- `ambientes`: as imagens de clima usadas na faixa de trocas (roupas dobradas). Elas vêm do Unsplash, um banco de fotos com licença gratuita que permite uso comercial, e são carregadas direto de lá. Nunca use imagem de ambiente para mostrar uma peça à venda, para a cliente não confundir com o seu estoque. Para trocar, copie o endereço de outra foto gratuita do Unsplash (sem o `?` e o que vem depois).
 - `sobre`: a seção sobre a marca. O texto atual só diz o que é verdade sem conhecer a sua história (atendimento pelo WhatsApp, peças em foto e vídeo); veja o comentário PERSONALIZE acima dele e conte quem está por trás da ltmodasestilo, de onde vocês são, como escolhem as peças. Campos: `titulo`, `paragrafos` (lista, pelo menos um) e `foto` (hoje `"img/foto7.jpeg"`, em pé). Evite datas e números que você não possa comprovar.
 - `depoimentos`: lista de `{ nome, cidade, texto, peca }`. Está vazia, então a seção não aparece. Quando tiver depoimentos reais, com autorização de quem escreveu, acrescente um bloco por depoimento (pode usar só o primeiro nome e a inicial do sobrenome). Nunca publique depoimento inventado. A seção mostra no máximo 5.
 - `guiaMedidas`: como medir e a tabela de tamanhos da marca.
@@ -196,7 +193,8 @@ Abra `dados/conteudo.js`. Cada bloco tem um comentário explicando os campos. Os
 3. Proporções. O site mostra todas as fotos de peça no mesmo quadro em pé, na proporção 3:4 (a das suas fotos de 1200 x 1600):
    - Fotos 3:4 aparecem inteiras.
    - Fotos mais compridas, no formato de stories (9:16, como 900 x 1600), também funcionam: o site mantém a cabeça e corta um pouco da parte de baixo. Para a foto principal da peça, prefira uma 3:4 de corpo inteiro.
-   - Hero e Sobre também usam fotos em pé 3:4.
+   - Sobre usa foto em pé 3:4.
+   - O banner (hero) usa duas fotos próprias: uma deitada para o computador (16:9, como 1672 x 941) e uma em pé para o celular (9:16, como 941 x 1672). Prefira `.jpg`: um `.png` desse tamanho passa de 1 MB e deixa a primeira tela lenta. Os PNGs originais que você mandou estão guardados em `referencias/banners-originais/`, fora do site.
 4. Mantenha fundo e luz parecidos em todas as fotos de peça, como nas atuais (o mesmo estúdio): a home é uma grade e a diferença entre uma foto e outra chama mais atenção que a roupa.
 5. Miniaturas: depois de colocar ou trocar fotos, rode no terminal:
 
@@ -204,9 +202,9 @@ Abra `dados/conteudo.js`. Cada bloco tem um comentário explicando os campos. Os
 npm run fotos
 ```
 
-   Ele cria versões menores em `img/640/` e `img/828/`, que o site usa no celular e nas miniaturas para carregar mais rápido. Fotos já convertidas são puladas. Funciona no Windows. Se esquecer, o site continua funcionando com as fotos originais, só fica mais pesado.
+   Ele cria versões menores em `img/640/`, `img/828/` e `img/1280/` (esta só para fotos bem largas, como o banner do computador), que o site usa no celular e nas miniaturas para carregar mais rápido. Fotos já convertidas são puladas. Funciona no Windows. Se esquecer, o site continua funcionando com as fotos originais, só fica mais pesado.
 6. Vídeos: em pé (9:16), curtos (até uns 20 segundos) e leves (até uns 4 MB), em `.mp4`. Os vídeos que você mandou (478 x 850, cerca de 3 MB) estão no ponto certo. Vídeo gravado direto no iPhone pode vir em formato HEVC, que não toca em vários celulares Android: se for o caso, mande pelo WhatsApp para você mesma e use o arquivo que chegar, que vem convertido. O site só carrega o vídeo quando ele aparece na tela.
-7. Depois de colocar os arquivos, aponte para eles: em `produtos.js`, nos campos `fotos` e `video` de cada peça; em `conteudo.js`, em `hero.foto` e `sobre.foto`; em `config.js`, em `identidade.logo` e `identidade.favicon` se usar.
+7. Depois de colocar os arquivos, aponte para eles: em `produtos.js`, nos campos `fotos` e `video` de cada peça; em `conteudo.js`, em `hero.foto`, `hero.fotoCelular`, `sobre.foto` e nas fotos do `mosaico`; em `config.js`, em `identidade.logo` e `identidade.favicon` se usar.
 7. Compartilhamento: quando alguém manda o link de uma peça no WhatsApp ou no Instagram, a prévia usa a primeira foto da peça. O link da home e o da página de trocas usam a foto do hero. Não existe imagem separada para isso: cuide para que a primeira foto de cada peça seja a melhor.
 
 Se uma foto ou vídeo apontado não existir em `img/`, o build para e diz qual peça e qual arquivo.

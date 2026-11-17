@@ -92,14 +92,11 @@ function listaOuVazia(v) { return ehLista(v) ? v : []; }
 
 // Todas as fotos locais usadas no site, para o mapa de dimensões e srcset.
 function todasAsFotos(produtos, conteudo) {
-  const estilos = ehObjeto(conteudo.estilos) ? listaOuVazia(conteudo.estilos.cards) : [];
   return [
     conteudo.hero.foto,
-    ...listaOuVazia(conteudo.hero.fotos),
+    conteudo.hero.fotoCelular,
     conteudo.sobre.foto,
-    ...listaOuVazia(conteudo.paineis).map((p) => p && p.foto).filter(ehTexto),
-    ...listaOuVazia(conteudo.categorias).map((c) => c && c.foto).filter(ehTexto),
-    ...estilos.map((m) => m && m.foto).filter(ehTexto),
+    ...listaOuVazia(conteudo.mosaico).map((m) => m && m.foto).filter(ehTexto),
     ehObjeto(conteudo.novidades) ? conteudo.novidades.foto : "",
     ...produtos.flatMap((p) => p.fotos)
   ].filter(ehTexto);
@@ -107,9 +104,10 @@ function todasAsFotos(produtos, conteudo) {
 
 const ICONES_BENEFICIO = ["whatsapp", "video", "regua", "troca"];
 
-// Blocos da home (todos opcionais): barra de topo, navegação, destaques do topo, categorias,
-// estilos, painéis, coleção, benefícios, novidades e imagens de ambiente.
-function validarVitrine(conteudo, erros) {
+// Blocos da home (todos opcionais): barra de topo, navegação, foto de celular do banner,
+// coleção, mosaico, benefícios, novidades e imagens de ambiente.
+function validarVitrine(conteudo, erros, avisos, produtos) {
+  const categorias = new Set(produtos.filter(ehObjeto).map((p) => p.categoria).filter(ehTexto).map((c) => c.trim()));
   const ambientes = ehObjeto(conteudo.ambientes) ? conteudo.ambientes : {};
   for (const [nome, a] of Object.entries(ambientes)) {
     if (!ehObjeto(a) || !ehTexto(a.url) || !/^https:\/\/images\.unsplash\.com\/photo-[\w-]+$/.test(a.url)) {
@@ -131,58 +129,40 @@ function validarVitrine(conteudo, erros) {
 
   const hero = ehObjeto(conteudo.hero) ? conteudo.hero : {};
   if (hero.rotulo !== undefined && typeof hero.rotulo !== "string") erros.push('conteudo.js: "hero.rotulo" deve ser um texto curto (ou "").');
-  if (hero.fotos !== undefined && !ehLista(hero.fotos)) erros.push('conteudo.js: "hero.fotos" deve ser uma lista de fotos da pasta img/.');
-  listaOuVazia(hero.fotos).forEach((f, i) => validarFoto(f, `conteudo.js: "hero.fotos[${i}]"`, erros));
-  if (listaOuVazia(hero.fotos).length > 2) erros.push('conteudo.js: "hero.fotos" aceita até 2 fotos (com a foto principal, são 3 no topo).');
-  listaOuVazia(hero.destaques).forEach((d, i) => {
-    if (!ehObjeto(d) || !ehTexto(d.titulo) || !ehTexto(d.texto) || !ICONES_BENEFICIO.includes(d.icone)) {
-      erros.push(`conteudo.js: "hero.destaques[${i}]" precisa de titulo, texto e icone (${ICONES_BENEFICIO.join(", ")}).`);
+  if (hero.fotoCelular !== undefined && typeof hero.fotoCelular !== "string") {
+    erros.push('conteudo.js: "hero.fotoCelular" deve ser o caminho de uma foto em pé da pasta img/ (ou "").');
+  } else if (ehTexto(hero.fotoCelular)) {
+    validarFoto(hero.fotoCelular, 'conteudo.js: "hero.fotoCelular"', erros);
+  }
+  if (["fotos", "destaques"].some((campo) => hero[campo] !== undefined)) {
+    erros.push('conteudo.js: "hero.fotos" e "hero.destaques" não existem mais (o banner agora é uma foto de tela cheia). Apague esses campos; a foto do celular vai em "hero.fotoCelular".');
+  }
+  ["categorias", "estilos", "paineis"].forEach((bloco) => {
+    if (conteudo[bloco] !== undefined) {
+      erros.push(`conteudo.js: o bloco "${bloco}" não existe mais; as categorias da home agora ficam no bloco "mosaico". Apague "${bloco}".`);
     }
   });
 
-  listaOuVazia(conteudo.categorias).forEach((c, i) => {
-    const r = `conteudo.js: "categorias[${i}]"`;
-    if (!ehObjeto(c) || !ehTexto(c.nome) || !ehTexto(c.filtro)) {
-      erros.push(`${r} precisa de nome e filtro.`);
-      return;
-    }
-    if (c.filtro === "videos") return;
-    if (!ehTexto(c.foto)) {
-      erros.push(`${r} precisa de foto.`);
-      return;
-    }
-    validarFoto(c.foto, `${r}.foto`, erros);
-    if (c.rosto !== undefined && !(ehLista(c.rosto) && c.rosto.length === 2 && c.rosto.every(ehNumero))) {
-      erros.push(`${r}.rosto deve ser [esquerda, cima] em %, ex: [45, 18].`);
-    }
-    if (c.zoom !== undefined && (!ehNumero(c.zoom) || c.zoom < 1 || c.zoom > 4)) erros.push(`${r}.zoom deve ser um número de 1 a 4.`);
-  });
-
-  if (conteudo.estilos !== undefined) {
-    const est = conteudo.estilos;
-    if (!ehObjeto(est) || !ehTexto(est.titulo) || !ehLista(est.cards)) {
-      erros.push('conteudo.js: "estilos" precisa de titulo e cards.');
+  if (conteudo.mosaico !== undefined) {
+    const mosaico = conteudo.mosaico;
+    if (!ehLista(mosaico) || (mosaico.length !== 0 && mosaico.length !== 4)) {
+      erros.push('conteudo.js: "mosaico" precisa ter exatamente 4 quadros (ou [] para esconder).');
     } else {
-      est.cards.forEach((m, i) => {
+      mosaico.forEach((m, i) => {
+        const r = `conteudo.js: "mosaico[${i}]"`;
         if (!ehObjeto(m) || !ehTexto(m.titulo) || !ehTexto(m.filtro) || !ehTexto(m.foto)) {
-          erros.push(`conteudo.js: "estilos.cards[${i}]" precisa de titulo, filtro e foto.`);
+          erros.push(`${r} precisa de titulo, filtro e foto.`);
           return;
         }
-        validarFoto(m.foto, `conteudo.js: "estilos.cards[${i}].foto"`, erros);
+        validarFoto(m.foto, `${r}.foto`, erros);
+        if (m.filtro !== "videos" && !categorias.has(m.filtro.trim())) {
+          erros.push(`${r}.filtro "${m.filtro}" não é a categoria de nenhuma peça. Use o nome igual ao de produtos.js (${[...categorias].join(", ")}) ou "videos".`);
+        }
+        if (m.texto !== undefined && typeof m.texto !== "string") erros.push(`${r}.texto deve ser uma frase curta (ou "").`);
+        else if (ehTexto(m.texto) && contarPalavras(m.texto) > 12) avisos.push(`${r}.texto tem ${contarPalavras(m.texto)} palavras; o ideal são até 12.`);
       });
     }
   }
-
-  listaOuVazia(conteudo.paineis).forEach((p, i) => {
-    const r = `conteudo.js: "paineis[${i}]"`;
-    if (!ehObjeto(p) || !ehTexto(p.titulo) || !ehTexto(p.botao) || !ehTexto(p.link)) {
-      erros.push(`${r} precisa de titulo, botao e link.`);
-      return;
-    }
-    if (ehTexto(p.foto)) validarFoto(p.foto, `${r}.foto`, erros);
-    else if (ehTexto(p.ambiente)) ambienteValido(p.ambiente, r);
-    else erros.push(`${r} precisa de "foto" (foto de peça) ou de "ambiente".`);
-  });
 
   if (conteudo.colecao !== undefined && (!ehObjeto(conteudo.colecao) || !ehTexto(conteudo.colecao.titulo))) {
     erros.push('conteudo.js: "colecao" precisa de titulo.');
@@ -706,7 +686,7 @@ function main() {
   validarConfig(config, erros, avisos);
   validarProdutos(produtos, erros, avisos);
   validarConteudo(conteudo, erros, avisos);
-  if (ehObjeto(conteudo)) validarVitrine(conteudo, erros);
+  if (ehObjeto(conteudo)) validarVitrine(conteudo, erros, avisos, ehLista(produtos) ? produtos : []);
   procurarTracos(config, "config.js", erros);
   if (ehLista(produtos)) {
     produtos.forEach((p, i) => {

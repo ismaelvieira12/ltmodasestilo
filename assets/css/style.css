@@ -1,9 +1,10 @@
 /* ============================================================
    CATÁLOGO: folha de estilo única
-   Direção "Referência" (DESIGN.md): loja de moda com fundo creme, painéis bege, cartões
-   brancos, tinta quase preta nos botões e no rodapé, títulos numa serifa de alto contraste
-   (DM Serif Display) com rótulos pequenos em caixa alta, e um único acento verde (só WhatsApp).
-   Cantos de 4px, 10px no cartão branco, 50% só em círculos.
+   Direção "AERIS" (DESIGN.md): loja de moda com fundo branco quase puro, banner de tela cheia
+   com o cabeçalho transparente por cima, títulos numa sem serifa geométrica (Jost) em caixa
+   alta espaçada nas seções da home, fotos sobre cinza claro, tinta quase preta nos botões e no
+   rodapé, e um único acento verde (só WhatsApp). A cor vem das roupas, não da interface.
+   Cantos de 4px, 10px nos cartões de tabela, 50% só em círculos.
 
    Blocos, nesta ordem:
      1. Tokens            7. Home                13. Página da peça
@@ -26,30 +27,30 @@
 :root {
   color-scheme: light;
 
-  /* Padrões do modelo (os mesmos da ltmodasestilo); o build injeta os valores da identidade. */
-  --cor-fundo: #f6f4f0;
-  --cor-superficie: #f2f0eb;
-  --cor-painel: #efebe5;
-  --cor-cartao: #fdfdfc;
-  --cor-linha: #dbd9d5;
-  --cor-borda: #868482;
-  --cor-tinta: #151413;
-  --cor-tinta-suave: #595755;
+  /* Padrões do modelo; o build injeta os valores da identidade (dados/config.js). */
+  --cor-fundo: #fbfbfa;
+  --cor-superficie: #f7f7f5;
+  --cor-painel: #f2f2f1;
+  --cor-cartao: #fefefe;
+  --cor-linha: #e0e0df;
+  --cor-borda: #898988;
+  --cor-tinta: #161616;
+  --cor-tinta-suave: #5b5b5a;
   --cor-acento: #1e6b43;
-  --cor-acento-forte: #1c5a39;
-  --cor-texto-botao: #f6f4f0;
-  --cor-scrim: rgba(21, 20, 19, 0.6);
-  --sombra-fixa: 0 -8px 24px rgba(21, 20, 19, 0.06);
-  --sombra-cartao: 0 12px 40px rgba(21, 20, 19, 0.08);
-  /* Superfície preta (barra de topo e rodapé): a própria tinta. */
-  --cor-escuro: #151413;
-  --cor-escuro-linha: #42413f;
-  --cor-sobre-escuro: #f6f4f0;
-  --cor-sobre-escuro-suave: #aeaca9;
-  --cor-veu-forte: rgba(21, 20, 19, 0.82);
-  --cor-veu-zero: rgba(21, 20, 19, 0);
+  --cor-acento-forte: #1c5a3a;
+  --cor-texto-botao: #fbfbfa;
+  --cor-scrim: rgba(22, 22, 22, 0.6);
+  --sombra-fixa: 0 -8px 24px rgba(22, 22, 22, 0.06);
+  --sombra-cartao: 0 12px 40px rgba(22, 22, 22, 0.08);
+  /* Superfície preta (barra de topo, faixa dos vídeos no mosaico e rodapé): a própria tinta. */
+  --cor-escuro: #161616;
+  --cor-escuro-linha: #444444;
+  --cor-sobre-escuro: #fbfbfa;
+  --cor-sobre-escuro-suave: #b2b2b1;
+  --cor-veu-forte: rgba(22, 22, 22, 0.82);
+  --cor-veu-zero: rgba(22, 22, 22, 0);
 
-  --fonte-titulo: "DM Serif Display", "Titulo Fallback", Georgia, "Times New Roman", serif;
+  --fonte-titulo: "Jost", Arial, "Helvetica Neue", Helvetica, sans-serif;
   --fonte-texto: "Instrument Sans", Arial, "Helvetica Neue", Helvetica, sans-serif;
   /* Nome da marca (wordmark, @ do Instagram, o nome dentro de textos): face com "l" de cauda. */
   --fonte-marca: "IBM Plex Sans", Arial, "Helvetica Neue", Helvetica, sans-serif;
@@ -75,18 +76,12 @@
   --container: 1280px;
   --gutter: 16px;
   --topo-altura: 64px;
+  --barra-altura: 32px;
   /* Entre seções: 48px no celular e 64px no desktop (a referência é mais densa que a direção anterior). */
   --secao: var(--esp-9);
   --h2-para-conteudo: var(--esp-6);
 
   --suave: cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Fallback com size-adjust para a troca de fonte não mudar o número de linhas do h1. */
-@font-face {
-  font-family: "Titulo Fallback";
-  src: local("Georgia"), local("Times New Roman");
-  size-adjust: 100%;
 }
 
 @media (min-width: 640px) {
@@ -135,10 +130,10 @@ html:not(.js) [data-dica-tamanho] { display: none; }
   font-family: var(--fonte-marca);
   letter-spacing: 0;
 }
-/* Nos títulos serifados o nome segue a serifa: nela o "l" tem serifa só de um lado e não se
-   confunde com o "I"; a face da marca no meio do título destoava. */
+/* Nos títulos o nome fica na face da marca e em minúsculas, mesmo com o título em caixa alta:
+   na Jost o "l" é um traço reto e "ltmodasestilo" seria lido como "Itmodasestilo". */
 h1 .marca-nome,
-h2 .marca-nome { font-family: inherit; letter-spacing: inherit; }
+h2 .marca-nome { font-family: var(--fonte-marca); letter-spacing: 0; text-transform: none; }
 
 h1, h2, h3, p, ul, ol, dl, dd, figure, fieldset, blockquote { margin: 0; }
 ul, ol { padding: 0; }
@@ -149,18 +144,26 @@ a { color: inherit; }
 s { text-decoration: line-through; }
 b, strong { font-weight: 600; }
 
-/* Títulos na serifa de alto contraste, sempre no peso 400 (o único da DM Serif Display:
-   pedir 500 faria o navegador engrossar a letra artificialmente). */
+/* Títulos na sem serifa geométrica (Jost), peso 500. Na home, os títulos de seção ficam em caixa
+   alta espaçada e menores, como na referência AERIS ("NOVINKI"); nas outras páginas (peça,
+   trocas, 404) ficam em caixa normal, mais fáceis de ler em títulos longos. */
 h1, h2 {
   font-family: var(--fonte-titulo);
-  font-weight: 400;
+  font-weight: 500;
   text-wrap: balance;
 }
 
 h2 {
-  font-size: clamp(1.875rem, 1.35rem + 1.7vw, 2.75rem);
-  line-height: 1.08;
-  letter-spacing: -0.01em;
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2.125rem);
+  line-height: 1.15;
+  letter-spacing: -0.005em;
+}
+
+.pagina-home h2 {
+  font-size: clamp(1.25rem, 1.05rem + 0.7vw, 1.625rem);
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 h3 {
@@ -420,7 +423,7 @@ button.link { padding: 0; border: 0; background: none; cursor: pointer; }
   list-style: none;
   display: grid;
   align-items: center;
-  height: 32px;
+  height: var(--barra-altura);
   text-align: center;
 }
 .barra-topo-lista li {
@@ -448,6 +451,22 @@ button.link { padding: 0; border: 0; background: none; cursor: pointer; }
   z-index: 20;
   background: var(--cor-fundo);
   border-bottom: 1px solid var(--cor-linha);
+}
+
+/* Home: o cabeçalho fica transparente sobre o banner (o main sobe a altura dele) e ganha o
+   fundo e a hairline assim que a página rola (body.topo-solido, do app.js) ou a busca abre.
+   Sem JS ele já nasce com fundo. A tinta continua escura: a parede do banner é clara. */
+.pagina-home main { margin-top: calc(-1 * var(--topo-altura) - 1px); }
+.pagina-home .topo {
+  background: transparent;
+  border-bottom-color: transparent;
+  transition: background-color 250ms ease-out, border-color 250ms ease-out;
+}
+.pagina-home.topo-solido .topo,
+.pagina-home.busca-aberta .topo,
+html:not(.js) .pagina-home .topo {
+  background: var(--cor-fundo);
+  border-bottom-color: var(--cor-linha);
 }
 .topo-inner {
   display: grid;
@@ -667,8 +686,16 @@ body.barra-visivel .topo-whats-icone {
   }
   .busca.container { max-width: 720px; }
 }
+/* A partir de 1280px, o arranjo da referência AERIS: navegação à esquerda, wordmark no centro
+   exato (colunas laterais iguais) e os ícones à direita. */
 @media (min-width: 1280px) {
-  .topo-nav ul { gap: var(--esp-7); }
+  .topo-inner {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas: "nav marca acoes";
+  }
+  .topo-nav { justify-self: start; }
+  .topo-marca { justify-self: center; align-items: center; }
+  .topo-acoes { justify-self: end; }
   .topo-insta { display: inline-flex; }
 }
 
@@ -744,7 +771,7 @@ body.barra-visivel .topo-whats-icone {
   padding: var(--esp-4) var(--gutter) calc(var(--esp-4) + env(safe-area-inset-bottom, 0px));
 }
 
-/* ---------- 7. Home: topo dividido, categorias, estilos, painéis, benefícios, novidades ---------- */
+/* ---------- 7. Home: banner, mosaico, benefícios, novidades ---------- */
 
 /* Rótulo pequeno em caixa alta espaçada acima dos títulos (como "NEW COLLECTION" na referência).
    Tinta suave (6,5:1 sobre o fundo), nunca o cinza claro da imagem. */
@@ -783,40 +810,82 @@ body.barra-visivel .topo-whats-icone {
 .link-seta:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 .link-seta:hover svg { transform: translateX(3px); }
 
-/* 7.1 Topo dividido.
-   Celular: texto e botões primeiro (o botão fica na primeira tela), a foto 4:5 logo abaixo
-   (o rosto aparece na primeira tela) e os três destaques depois da foto.
-   Desktop: texto e destaques à esquerda sobre o creme; a foto ocupa a coluna da direita até a
-   borda da janela, com a numeração vertical 01, 02, 03 numa pílula branca. */
+/* 7.1 Banner de tela cheia (referência AERIS).
+   A foto cobre a tela inteira, por baixo do cabeçalho transparente (o main sobe a altura do
+   cabeçalho, ver seção 5). Altura: a tela menos a barra de topo, em svh (não pula quando a barra
+   de endereço do celular aparece e some).
+   Tela em pé (celular, tablet em pé): a foto em pé e o texto em cima, sobre a parede; a frase
+   some para não cobrir a modelo.
+   Tela deitada (computador): a foto deitada e o texto à esquerda, centrado na altura.
+   O texto é sempre a tinta escura: as fotos têm parede clara onde ele fica (contraste acima de
+   10:1 na parede bege). */
 .hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas: "texto" "midia" "destaques";
+  position: relative;
+  display: flex;
+  height: 100vh;
+  height: 100svh;
+  min-height: 520px;
+  overflow: hidden;
+  background: var(--cor-superficie);
 }
-.hero-texto {
-  grid-area: texto;
-  padding: var(--esp-6) var(--gutter) var(--esp-7);
+.barra-topo ~ main .hero {
+  height: calc(100vh - var(--barra-altura));
+  height: calc(100svh - var(--barra-altura));
 }
+/* Traço invisível no alto do banner: quando ele sai da tela, o cabeçalho ganha fundo (app.js). */
+.hero-sentinela {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 48px;
+  pointer-events: none;
+}
+.hero-midia,
+.hero-midia picture {
+  position: absolute;
+  inset: 0;
+}
+.hero-foto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+}
+.hero-conteudo {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  padding-top: calc(var(--topo-altura) + var(--esp-5));
+  padding-bottom: var(--esp-7);
+}
+.hero-texto { max-width: 34rem; }
+.hero .rotulo { color: var(--cor-tinta); }
 .hero h1 {
-  font-size: clamp(2.5rem, 1.1rem + 4vw, 4.5rem);
+  font-size: clamp(1.875rem, 1.25rem + 2.6vw, 4.25rem);
+  font-weight: 500;
   line-height: 1.04;
-  letter-spacing: -0.015em;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
 }
 .hero-frase {
+  display: none;
   margin-top: var(--esp-4);
-  max-width: 40ch;
+  max-width: 38ch;
   font-size: 16px;
-  color: var(--cor-tinta-suave);
+  font-weight: 500;
+  color: var(--cor-tinta);
 }
 .hero-acoes {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--esp-3) var(--esp-6);
-  margin-top: var(--esp-6);
+  margin-top: var(--esp-5);
 }
 
-/* "Ver vídeos" com o play num círculo (o "Watch Lookbook" da referência). */
+/* "Ver vídeos" com o play num círculo, ao lado do botão. */
 .link-play {
   display: inline-flex;
   align-items: center;
@@ -834,281 +903,85 @@ body.barra-visivel .topo-whats-icone {
   width: 44px;
   height: 44px;
   padding-left: 2px;
-  border: 1px solid var(--cor-borda);
+  border: 1px solid var(--cor-tinta);
   border-radius: 50%;
-  transition: background-color 150ms ease-out, border-color 150ms ease-out, color 150ms ease-out, transform 200ms var(--suave);
+  transition: background-color 150ms ease-out, color 150ms ease-out, transform 200ms var(--suave);
 }
 .link-play:hover .link-play-circulo {
   background: var(--cor-tinta);
-  border-color: var(--cor-tinta);
   color: var(--cor-fundo);
   transform: scale(1.06);
 }
 
-.hero-midia {
-  grid-area: midia;
-  position: relative;
+/* Celular em pé: só o botão principal (o "Ver vídeos" quebraria a linha e desceria sobre a
+   modelo). Em telas baixas (iPhone SE), sem o rótulo e com o título menor. */
+@media (orientation: portrait) and (max-width: 639px) {
+  .hero .link-play { display: none; }
 }
-.hero-faixa {
-  display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
+@media (orientation: portrait) and (max-height: 700px) {
+  .hero-conteudo { padding-top: calc(var(--topo-altura) + var(--esp-3)); }
+  .hero .rotulo { display: none; }
+  .hero h1 { font-size: 28px; }
 }
-.hero-faixa::-webkit-scrollbar { display: none; }
-.hero-slide {
-  flex: 0 0 100%;
-  aspect-ratio: 4 / 5;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-}
-.hero-slide-link { display: block; height: 100%; }
-.hero-foto {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 20%;
+@media (orientation: portrait) and (min-width: 640px) {
+  .hero-frase { display: block; }
 }
 
-/* Numeração vertical 01, 02, 03 (botões de 44px de largura) e pausa, numa pílula branca sólida
-   na borda direita da foto. O número atual fica em tinta com um traço vertical embaixo. */
-.hero-controles {
-  position: absolute;
-  right: var(--gutter);
-  bottom: var(--gutter);
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: var(--esp-1) 0;
-  border-radius: 22px;
-  background: var(--cor-cartao);
-}
-.hero-numero,
-.hero-pausa {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 40px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--cor-tinta-suave);
-  font: 600 12px/1 var(--fonte-texto);
-  letter-spacing: 0.04em;
-  font-variant-numeric: tabular-nums;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.hero-numero[aria-current="true"] {
-  align-items: flex-start;
-  height: 60px;
-  padding-top: 14px;
-  color: var(--cor-tinta);
-}
-.hero-numero[aria-current="true"]::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: 6px;
-  width: 1px;
-  height: 18px;
-  background: var(--cor-tinta);
-}
-.hero-numero:hover,
-.hero-pausa:hover { color: var(--cor-tinta); }
-.hero-pausa { color: var(--cor-tinta); }
-.hero-pausa .icone-tocar,
-.hero-pausa[data-estado="pausado"] .icone-pausar { display: none; }
-.hero-pausa[data-estado="pausado"] .icone-tocar { display: block; }
-
-/* Destaques: ícone num círculo bege, título e linha de apoio. No celular, três colunas só com o título. */
-.hero-destaques {
-  grid-area: destaques;
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--esp-2);
-  padding: var(--esp-5) var(--gutter) 0;
-}
-.hero-destaques li {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--esp-2);
-  text-align: center;
-}
-.destaque-icone {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--cor-painel);
-}
-.destaque-texto { display: flex; flex-direction: column; gap: 2px; }
-.destaque-texto strong { font-size: 12.5px; font-weight: 600; line-height: 1.3; }
-.destaque-texto span { display: none; font-size: 13px; color: var(--cor-tinta-suave); line-height: 1.35; }
-
-@media (min-width: 1024px) {
-  .hero {
-    grid-template-columns: minmax(0, 52fr) minmax(0, 48fr);
-    grid-template-rows: minmax(0, 1fr) auto;
-    grid-template-areas: "texto midia" "destaques midia";
-    height: clamp(560px, calc(100vh - 150px), 680px);
-  }
-  /* O texto alinha com a borda esquerda do container: a coluna tem 52% da página, então a
-     margem do container ((página - 1280) / 2) é a coluna dividida por 1,04 menos 640px. */
-  .hero-texto,
-  .hero-destaques {
-    padding-left: max(var(--gutter), calc(100% / 1.04 - var(--container) / 2 + var(--gutter)));
-    padding-right: var(--esp-9);
-  }
-  .hero-texto {
-    align-self: end;
-    padding-top: var(--esp-8);
-    padding-bottom: var(--esp-8);
-  }
-  .hero-frase { margin-top: var(--esp-5); font-size: 17px; }
-  .hero-acoes { margin-top: var(--esp-7); gap: var(--esp-6); }
-
-  .hero-midia { height: 100%; }
-  .hero-faixa { height: 100%; }
-  .hero-slide { aspect-ratio: auto; height: 100%; }
-  .hero-controles { top: 50%; bottom: auto; right: var(--esp-6); transform: translateY(-50%); }
-
-  /* Destaques em linha, separados por divisórias finas; espaço embaixo para o cartão das
-     categorias, que sobe sobre a base do topo. */
-  .hero-destaques {
-    align-self: start;
-    display: flex;
-    gap: 0;
-    padding-top: 0;
-    padding-bottom: 120px;
-  }
-  .hero-destaques li {
-    flex-direction: row;
+/* Tela deitada: texto à esquerda, centrado na altura, sobre a parede. A largura do texto acompanha
+   a tela (52vw) para nunca encostar na modelo, que começa por volta de 58% da foto. */
+@media (orientation: landscape) {
+  .hero-foto { object-position: 60% 25%; }
+  .hero-conteudo {
     align-items: center;
-    gap: var(--esp-3);
-    text-align: left;
-    padding: 0 var(--esp-5);
-    border-left: 1px solid var(--cor-linha);
+    padding-top: var(--topo-altura);
+    padding-bottom: 0;
   }
-  .hero-destaques li:first-child { padding-left: 0; border-left: 0; }
-  .destaque-texto strong { font-size: 13px; white-space: nowrap; }
-  .destaque-texto span { display: block; font-size: 12.5px; white-space: nowrap; }
+  .hero-texto { max-width: min(40rem, 52vw); }
+  .hero-frase { display: block; }
+}
+@media (orientation: landscape) and (min-width: 1024px) {
+  .hero-frase { margin-top: var(--esp-5); font-size: 17px; }
+  .hero-acoes { margin-top: var(--esp-7); }
+}
+/* Celular deitado: o banner é baixo, então o texto encolhe. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .hero h1 { font-size: 28px; }
+  .hero .rotulo,
+  .hero-frase { display: none; }
+  .hero-acoes { margin-top: var(--esp-4); }
 }
 
-/* 7.2 Categorias em círculos, dentro de um cartão branco com sombra suave.
-   Desktop: o cartão sobe sobre a base do topo (margem negativa). Celular: faixa com rolagem
-   lateral. Os círculos são a única forma redonda grande do site; o último é preto, com texto. */
-.categorias {
-  position: relative;
-  z-index: 2;
-  margin-top: var(--esp-6);
-}
-.categorias-cartao {
-  list-style: none;
-  display: flex;
-  gap: var(--esp-1);
-  padding: var(--esp-5) var(--esp-3);
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
-  scrollbar-width: none;
-  background: var(--cor-cartao);
-  border-radius: var(--raio-cartao);
-  box-shadow: var(--sombra-cartao);
-}
-.categorias-cartao::-webkit-scrollbar { display: none; }
-.categorias-cartao li { flex: none; scroll-snap-align: start; }
-.circulo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--esp-2);
-  width: 70px;
-  color: var(--cor-tinta);
-  text-decoration: none;
-  -webkit-tap-highlight-color: transparent;
-}
-.circulo-foto {
-  position: relative;
-  display: block;
-  width: 62px;
-  height: 62px;
-  overflow: hidden;
-  border-radius: 50%;
-  background: var(--cor-painel);
-  transition: box-shadow 150ms ease-out, transform 250ms var(--suave);
-}
-.circulo-foto img {
-  position: absolute;
-  max-width: none;
-  height: auto;
-}
-.circulo--destaque .circulo-foto {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--cor-tinta);
-}
-.circulo-texto {
-  font-family: var(--fonte-texto);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--cor-fundo);
-}
-.circulo-nome {
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.25;
-  text-align: center;
-}
-.circulo:hover .circulo-foto { transform: translateY(-2px); }
-.circulo:hover .circulo-foto,
-.circulo:focus-visible .circulo-foto { box-shadow: 0 0 0 2px var(--cor-cartao), 0 0 0 4px var(--cor-tinta); }
-.circulo:focus-visible { outline: none; }
-
-@media (min-width: 1024px) {
-  .categorias { margin-top: -88px; }
-  .categorias-cartao {
-    justify-content: space-around;
-    gap: var(--esp-4);
-    padding: var(--esp-7) var(--esp-8);
-    overflow: visible;
-  }
-  .circulo { width: 140px; gap: var(--esp-3); }
-  .circulo-foto { width: 96px; height: 96px; }
-  .circulo-texto { font-size: 13px; }
-  .circulo-nome { font-size: 14px; }
-}
-
-/* 7.3 Compre por categoria: quatro cards altos (4:5) com véu escuro embaixo, título e
-   "Ver peças" com seta. Celular: 2 x 2. Desktop: uma linha de 4. */
-.estilos-lista {
+/* 7.2 Mosaico: quatro quadros com foto (três categorias e a faixa escura dos vídeos).
+   Celular: o 1º inteiro (4:5), o 2º e o 3º lado a lado (3:4) e a faixa inteira.
+   Desktop: o 1º alto à esquerda (duas linhas), o 2º e o 3º em cima, a faixa larga embaixo deles.
+   Nas fotos, o nome da categoria e "Ver peças" ficam embaixo, em claro, sobre um véu escuro. */
+.mosaico-grade {
   list-style: none;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    "alto alto"
+    "a b"
+    "largo largo";
   gap: var(--esp-3);
 }
-.estilo-card {
+.mosaico-item--alto { grid-area: alto; }
+.mosaico-item--a { grid-area: a; }
+.mosaico-item--b { grid-area: b; }
+.mosaico-item--largo { grid-area: largo; }
+
+.mosaico-quadro {
   position: relative;
   display: block;
-  aspect-ratio: 4 / 5;
+  height: 100%;
+  aspect-ratio: 3 / 4;
   overflow: hidden;
   border-radius: var(--raio-superficie);
   color: var(--cor-sobre-escuro);
   text-decoration: none;
 }
-.estilo-foto {
+.mosaico-item--alto .mosaico-quadro { aspect-ratio: 4 / 5; }
+.mosaico-foto {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -1117,107 +990,120 @@ body.barra-visivel .topo-whats-icone {
   object-position: 50% 20%;
   transition: transform 700ms var(--suave), opacity 200ms ease-out;
 }
-.estilo-card::after {
+.mosaico-quadro::after {
   content: "";
   position: absolute;
-  inset: 40% 0 0;
-  background: linear-gradient(to top, var(--cor-veu-forte) 0%, var(--cor-veu-forte) 35%, var(--cor-veu-zero) 100%);
+  inset: 45% 0 0;
+  background: linear-gradient(to top, var(--cor-veu-forte) 0%, var(--cor-veu-zero) 100%);
 }
-.estilo-texto {
+.mosaico-texto {
   position: absolute;
-  left: var(--esp-3);
-  right: var(--esp-3);
-  bottom: var(--esp-3);
+  left: var(--esp-4);
+  right: var(--esp-4);
+  bottom: var(--esp-4);
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--esp-1);
+  gap: var(--esp-2);
 }
-.estilo-titulo {
+.mosaico-titulo {
+  font-family: var(--fonte-titulo);
   font-size: 15px;
-  font-weight: 600;
-  line-height: 1.25;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
-.estilo-link {
+.mosaico-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 13px;
   font-weight: 500;
 }
-.estilo-link svg { transition: transform 250ms var(--suave); }
-@media (hover: hover) {
-  .estilo-card:hover .estilo-foto { transform: scale(1.04); }
-  .estilo-card:hover .estilo-link svg { transform: translateX(3px); }
-}
-@media (min-width: 1024px) {
-  .estilos-lista { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--esp-6); }
-  .estilo-texto { left: var(--esp-6); right: var(--esp-6); bottom: var(--esp-6); gap: var(--esp-2); }
-  .estilo-titulo { font-size: 19px; }
-  .estilo-link { font-size: 14px; }
-}
+.mosaico-link svg,
+.mosaico-botao svg { flex: none; transition: transform 250ms var(--suave); }
 
-/* 7.4 Dois painéis bege: texto à esquerda (rótulo, título serifado, botão preto) e a imagem à
-   direita, encostada na borda do painel. Um embaixo do outro no celular, lado a lado no desktop. */
-.paineis-lista {
-  list-style: none;
+/* Faixa escura: texto claro à esquerda sobre a tinta e a foto à direita. */
+.mosaico-faixa {
   display: grid;
-  gap: var(--esp-3);
-}
-.painel {
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-  min-height: 220px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: 240px;
+  height: 100%;
   overflow: hidden;
   border-radius: var(--raio-superficie);
-  background: var(--cor-painel);
+  background: var(--cor-escuro);
+  color: var(--cor-sobre-escuro);
+  text-decoration: none;
 }
-.painel-texto {
+.mosaico-faixa-texto {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  padding: var(--esp-6) var(--esp-3) var(--esp-6) var(--esp-5);
+  gap: var(--esp-3);
+  padding: var(--esp-6) var(--esp-4) var(--esp-6) var(--esp-5);
 }
-.painel-titulo {
-  max-width: 15ch;
-  margin-bottom: var(--esp-5);
-  font-size: clamp(1.5rem, 1.15rem + 1.2vw, 2.125rem);
-  line-height: 1.08;
-}
-.painel-botao {
-  height: 44px;
-  padding: 0 var(--esp-4);
+.mosaico-faixa .mosaico-titulo { font-size: 20px; line-height: 1.15; }
+.mosaico-frase {
   font-size: 14px;
+  line-height: 1.45;
+  color: var(--cor-sobre-escuro-suave);
 }
-.painel-midia {
-  position: relative;
-  background: var(--cor-superficie);
+.mosaico-botao {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-2);
+  height: 44px;
+  margin-top: var(--esp-2);
+  padding: 0 var(--esp-4);
+  border-radius: var(--raio-controle);
+  background: var(--cor-sobre-escuro);
+  color: var(--cor-escuro);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
 }
-.painel-foto {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 20%;
-}
-@media (min-width: 1024px) {
-  .paineis-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--esp-6); }
-  .painel { min-height: 270px; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
-  .painel-texto { padding: var(--esp-8) var(--esp-4) var(--esp-8) var(--esp-8); }
-  .painel-botao { height: 46px; padding: 0 var(--esp-5); }
+.mosaico-faixa-midia { position: relative; display: block; }
+
+.mosaico-quadro:focus-visible,
+.mosaico-faixa:focus-visible { outline-offset: 3px; }
+
+@media (hover: hover) {
+  .mosaico-quadro:hover .mosaico-foto,
+  .mosaico-faixa:hover .mosaico-foto { transform: scale(1.04); }
+  .mosaico-quadro:hover .mosaico-link svg,
+  .mosaico-faixa:hover .mosaico-botao svg { transform: translateX(3px); }
 }
 
-/* 7.5 Benefícios: painel bege com quatro itens separados por divisórias finas.
-   Celular: 2 x 2. Desktop: uma linha. */
+@media (min-width: 1024px) {
+  .mosaico-grade {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(300px, 1fr) minmax(260px, auto);
+    grid-template-areas:
+      "alto a b"
+      "alto largo largo";
+    gap: var(--esp-5);
+  }
+  .mosaico-quadro,
+  .mosaico-item--alto .mosaico-quadro { aspect-ratio: auto; min-height: 100%; }
+  .mosaico-texto { left: var(--esp-6); right: var(--esp-6); bottom: var(--esp-6); }
+  .mosaico-titulo { font-size: 17px; }
+  .mosaico-link { font-size: 14px; }
+  .mosaico-faixa { min-height: 260px; }
+  .mosaico-faixa-texto { padding: var(--esp-8) var(--esp-6) var(--esp-8) var(--esp-8); gap: var(--esp-4); }
+  .mosaico-faixa .mosaico-titulo { font-size: 24px; }
+  .mosaico-frase { font-size: 15px; max-width: 30ch; }
+}
+
+/* 7.5 Benefícios: quatro itens com ícone entre duas linhas finas, sem caixa (como a faixa de
+   vantagens das referências). Celular: 2 x 2. Desktop: uma linha. */
 .beneficios-lista {
   list-style: none;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  overflow: hidden;
-  border-radius: var(--raio-superficie);
-  background: var(--cor-painel);
+  border-top: 1px solid var(--cor-linha);
+  border-bottom: 1px solid var(--cor-linha);
 }
 .beneficios-lista li:nth-child(even) { border-left: 1px solid var(--cor-linha); }
 .beneficios-lista li:nth-child(n+3) { border-top: 1px solid var(--cor-linha); }
@@ -1281,7 +1167,6 @@ body.barra-visivel .topo-whats-icone {
   object-position: 50% 18%;
 }
 .receba-texto { padding: var(--esp-7) var(--esp-5) var(--esp-8); }
-.receba-texto h2 { font-size: clamp(1.875rem, 1.3rem + 1.8vw, 2.75rem); }
 .receba-texto > p:not(.rotulo) {
   margin-top: var(--esp-3);
   max-width: 44ch;
@@ -1354,7 +1239,26 @@ body.barra-visivel .topo-whats-icone {
 
 /* ---------- 7b. Vídeos (faixa horizontal de cards 9:16, formato dos stories) ---------- */
 
-/* Cabeçalho da faixa: o mesmo .cabeca-secao das outras seções (título e, à direita, os controles). */
+/* Cabeçalho centrado (vídeos): título no meio. Celular: os controles embaixo dele, centrados.
+   Desktop: na mesma linha, encostados à direita, sem tirar o título do centro. */
+.cabeca-centro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--esp-3);
+  margin-bottom: var(--h2-para-conteudo);
+  text-align: center;
+}
+@media (min-width: 1024px) {
+  .cabeca-centro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+  }
+  .cabeca-centro h2 { grid-column: 2; }
+  .cabeca-centro .videos-controles { grid-column: 3; justify-self: end; }
+}
+
 .videos-controles {
   display: flex;
   gap: var(--esp-2);
@@ -1736,6 +1640,60 @@ html:not(.js) .topo-favoritos { display: none; }
   justify-content: center;
   margin-top: var(--esp-8);
 }
+/* Sem JS, "Ver todas as peças" não funciona: todas as peças já aparecem e o botão some. */
+html:not(.js) .grade > [data-alem] { display: block !important; }
+html:not(.js) [data-mostrar-mais] { display: none; }
+
+/* Coleção da home (referência AERIS): título centrado, a frase sobre preço embaixo e as abas
+   de categoria em texto, com um traço embaixo da ativa. No celular as abas rolam de lado. */
+.pagina-home .colecao-cabeca {
+  align-items: center;
+  gap: var(--esp-2);
+  margin-bottom: var(--esp-6);
+  text-align: center;
+}
+.pagina-home .colecao-aviso { margin-top: 0; font-size: 14px; }
+.chips.chips--filtro.chips--abas {
+  align-self: stretch;
+  gap: var(--esp-5);
+  margin-top: var(--esp-2);
+  border-bottom: 1px solid var(--cor-linha);
+}
+.chips--abas .chip {
+  min-width: 0;
+  padding: 0 2px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--cor-tinta-suave);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 150ms ease-out;
+}
+.chips--abas .chip::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--cor-tinta);
+  transform: scaleX(0);
+  transition: transform 250ms var(--suave);
+}
+.chips--abas .chip:hover { color: var(--cor-tinta); }
+.chips--abas .chip.chip--ativo,
+.chips--abas .chip[aria-pressed="true"] {
+  background: none;
+  color: var(--cor-tinta);
+}
+.chips--abas .chip[aria-pressed="true"]::after { transform: scaleX(1); }
+
+.grade--colecao { gap: var(--esp-6) var(--esp-3); }
+@media (min-width: 640px) {
+  .grade--colecao { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 
 @media (min-width: 1024px) {
   .colecao-cabeca {
@@ -1755,6 +1713,25 @@ html:not(.js) .topo-favoritos { display: none; }
   .grade { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 56px var(--esp-6); }
   .grade--quatro { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .cartao-nome { font-size: 15px; }
+
+  .pagina-home .colecao-cabeca {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--esp-2);
+    margin-bottom: var(--esp-7);
+  }
+  .chips.chips--filtro.chips--abas {
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: var(--esp-7);
+  }
+}
+/* Computador largo: uma linha de 6 peças, cards menores (como as Novidades da referência). */
+@media (min-width: 1280px) {
+  .grade--colecao { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 40px var(--esp-4); }
+  .grade--colecao .cartao-nome { margin-top: var(--esp-2); font-size: 13.5px; }
+  .grade--colecao .cartao-cor { font-size: 12.5px; }
 }
 
 /* ---------- 9. Sobre (texto à esquerda, retrato 4:5 à direita) ---------- */
@@ -2882,13 +2859,14 @@ html.js .galeria-faixa img[role="button"] { cursor: zoom-in; }
   html { scroll-behavior: auto; }
   html.js [data-revelar] { opacity: 1; transform: none; }
   html.js img[data-fade] { opacity: 1; }
-  .cartao-foto img, .estilo-foto { transform: none !important; }
+  .cartao-foto img, .mosaico-foto { transform: none !important; }
   .barra-fixa, .galeria-faixa li { transition: none; }
 }
 
 @media print {
-  .barra-topo, .topo, .menu, .favoritos, .barra-fixa, .btn, .segmentos, .galeria-miniaturas, .pular, .hero-controles, .carrossel-seta, .favorito { display: none !important; }
+  .barra-topo, .topo, .menu, .favoritos, .barra-fixa, .btn, .segmentos, .galeria-miniaturas, .pular, .carrossel-seta, .favorito { display: none !important; }
   body { background: #fff; color: #000; }
+  .pagina-home main { margin-top: 0; }
   .galeria-faixa { display: block; }
   .galeria-faixa li { opacity: 1; aspect-ratio: auto; max-height: 50vh; }
   .galeria-faixa li:not(:first-child) { display: none; }

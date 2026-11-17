@@ -107,19 +107,22 @@ module.exports = {
   //   corFundo: cor de fundo das páginas. Ex: "#f7f7f5"
   //   corTinta: cor dos textos. Ex: "#1a1a1a"
   //   fonteTitulo / fonteTexto: nome da família no Google Fonts. Ex: "Outfit", "Inter"
-  // Identidade da ltmodasestilo (explicada no DESIGN.md, seção 0), a partir da imagem de
-  // referência escolhida pela dona:
-  //   fundo creme claro e tinta quase preta; o bege dos painéis e o branco dos cartões
-  //   saem do fundo sozinhos, no build;
+  // Identidade da ltmodasestilo (explicada no DESIGN.md, seção 0), a partir da referência
+  // "AERIS" escolhida pela dona em 17/11/2026:
+  //   fundo branco quase puro e tinta quase preta; o cinza claro das fotos e dos painéis e o
+  //   branco dos cartões saem do fundo sozinhos, no build. A cor fica por conta das roupas;
   //   verde-folha só nos botões de WhatsApp, o mesmo verde da planta que aparece em todas as fotos;
-  //   títulos numa serifa de alto contraste (DM Serif Display) e texto numa sem serifa limpa.
+  //   títulos numa sem serifa geométrica (Jost), em caixa alta nas seções, e texto numa sem
+  //   serifa limpa (Instrument Sans).
+  // Para voltar ao visual anterior: corFundo "#f6f4f0", corTinta "#151413" e
+  // fonteTitulo "DM Serif Display".
   identidade: {
     logo: "",
     favicon: "",
     corAcento: "#1e6b43",
-    corFundo: "#f6f4f0",
-    corTinta: "#151413",
-    fonteTitulo: "DM Serif Display",
+    corFundo: "#fbfbfa",
+    corTinta: "#161616",
+    fonteTitulo: "Jost",
     fonteTexto: "Instrument Sans"
   }
 };
