@@ -22,6 +22,8 @@ module.exports = {
   // Endereço do site publicado, SEM barra no final. Ex: "https://ltmodasestilo.com.br"
   // Usado nos links compartilhados, no sitemap e nos dados para o Google.
   // CONFIRA depois de publicar: troque pelo endereço que a Vercel ou o seu domínio mostrar.
+  // No GitHub Pages não precisa mexer: a publicação usa sozinha o endereço do Pages
+  // (https://ismaelvieira12.github.io/ltmodasestilo), com a subpasta.
   dominio: "https://ltmodasestilo.vercel.app",
 
   // WhatsApp que recebe os pedidos: (85) 99818-4090.

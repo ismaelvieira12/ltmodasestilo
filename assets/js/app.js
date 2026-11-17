@@ -18,6 +18,8 @@ document.documentElement.classList.add("js", "app");
   "use strict";
 
   var cfg = window.CONFIG_CLIENTE || {};
+  // Subpasta do site quando publicado fora da raiz (ex: GitHub Pages em "/ltmodasestilo"); "" na raiz.
+  var BASE = String(cfg.base || "").replace(/\/+$/, "");
   var produto = window.PRODUTO || null;
   var reduzMovimento = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var desktop = function () { return window.matchMedia && window.matchMedia("(min-width: 1024px)").matches; };
@@ -526,7 +528,7 @@ document.documentElement.classList.add("js", "app");
     if (termoBusca) partes.push("busca=" + encodeURIComponent(termoBusca));
     var chip = chipsFiltro.filter(function (b) { return (b.getAttribute("data-filtro") || "") === filtroCategoria; })[0];
     if (filtroCategoria && chip) partes.push("categoria=" + chip.getAttribute("data-slug"));
-    history.replaceState(null, "", "/" + (partes.length ? "?" + partes.join("&") : "") + location.hash);
+    history.replaceState(null, "", BASE + "/" + (partes.length ? "?" + partes.join("&") : "") + location.hash);
   }
 
   function rolarParaColecao() {
@@ -580,7 +582,7 @@ document.documentElement.classList.add("js", "app");
       ev.preventDefault();
       var termo = campoBusca.value.trim();
       if (!ehHome) {
-        location.href = "/?busca=" + encodeURIComponent(termo) + "#colecao";
+        location.href = BASE + "/?busca=" + encodeURIComponent(termo) + "#colecao";
         return;
       }
       buscar(termo, true);
@@ -626,9 +628,9 @@ document.documentElement.classList.add("js", "app");
     var a = ev.target.closest ? ev.target.closest("a[href]") : null;
     if (!a) return;
     var href = a.getAttribute("href") || "";
-    if (href.indexOf("/?") !== 0 || href.indexOf("#colecao") < 0) return;
+    if (href.indexOf(BASE + "/?") !== 0 || href.indexOf("#colecao") < 0) return;
     var params;
-    try { params = new URLSearchParams(href.slice(2).split("#")[0]); } catch (e) { return; }
+    try { params = new URLSearchParams(href.slice(BASE.length + 2).split("#")[0]); } catch (e) { return; }
     ev.preventDefault();
     if (params.get("busca") !== null) buscar(params.get("busca"), true);
     else filtrarCategoria(categoriaPorSlug(params.get("categoria") || ""), true);
@@ -1162,7 +1164,7 @@ document.documentElement.classList.add("js", "app");
   function itemFavorito(slug) {
     var p = pecasPorSlug[slug];
     var item = modeloFavorito.content.firstElementChild.cloneNode(true);
-    item.querySelector(".favorito-link").setAttribute("href", "/p/" + slug + "/");
+    item.querySelector(".favorito-link").setAttribute("href", BASE + "/p/" + slug + "/");
     var img = item.querySelector("img");
     img.setAttribute("src", p.foto);
     img.setAttribute("width", p.largura);

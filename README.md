@@ -317,6 +317,14 @@ git commit -m "Descreva a mudança"
 git push
 ```
 
+**Publicar pelo GitHub Pages (grátis, direto do repositório).** O site fica em `https://ismaelvieira12.github.io/ltmodasestilo/`. O arquivo `.github/workflows/pages.yml` faz o GitHub gerar e publicar o site sozinho a cada `git push`, já com o endereço certo (a subpasta `/ltmodasestilo` é ajustada automaticamente; o `dominio` do `config.js` continua valendo para o computador e para a Vercel).
+
+1. No GitHub, abra o repositório e vá em Settings > Pages. Em "Build and deployment", no campo "Source", troque "Deploy from a branch" por **GitHub Actions**. Só o dono do repositório (conta `ismaelvieira12`) consegue mudar isso. No plano gratuito do GitHub, o repositório precisa ser público para usar o Pages (ele já é).
+   Se o endereço mostra o texto deste README em vez do catálogo, é porque o "Source" ainda está em "Deploy from a branch": nesse modo o GitHub publica os arquivos do repositório como estão, e o site pronto (pasta `dist/`) nem é enviado.
+2. Envie o projeto (os 3 comandos acima: `git add .`, `git commit -m "..."`, `git push`).
+3. Na aba Actions do repositório aparece "Publicar no GitHub Pages" rodando. Em um ou dois minutos fica verde e o site está no ar. Se ficar vermelho, abra e veja a mensagem; se você tinha enviado antes de ativar o Pages, clique em "Re-run all jobs".
+4. A cada `git push`, o site se atualiza sozinho.
+
 Domínio próprio (recomendado para anúncios, porque o endereço aparece no anúncio e passa mais confiança):
 
 1. Registre um domínio. Para `.com.br`, o registro é feito em https://registro.br.

@@ -1,0 +1,56 @@
+# Publica o site no GitHub Pages a cada envio (git push) para a branch main.
+# Antes do primeiro envio, ative em: Settings > Pages > Build and deployment > Source: GitHub Actions.
+# O endereço do site (com a subpasta do repositório) vem do próprio GitHub e é passado ao build.
+
+name: Publicar no GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  gerar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o projeto
+        uses: actions/checkout@v4
+
+      - name: Preparar o Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Ler o endereço do GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Gerar o site
+        run: node build.js
+        env:
+          SITE_DOMINIO: ${{ steps.pages.outputs.base_url }}
+
+      - name: Guardar o site gerado
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  publicar:
+    needs: gerar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.publicacao.outputs.page_url }}
+    steps:
+      - name: Publicar
+        id: publicacao
+        uses: actions/deploy-pages@v4

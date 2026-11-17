@@ -226,8 +226,8 @@ function validarConfig(config, erros, avisos) {
 
   if (!ehTexto(config.dominio)) {
     erros.push('config.js: o campo "dominio" é obrigatório, sem barra no final. Ex: "https://suamarca.vercel.app"');
-  } else if (!/^https?:\/\/[^\s/?#]+$/i.test(config.dominio.replace(/\/+$/, ""))) {
-    erros.push(`config.js: "dominio" precisa ser só o endereço do site, começando com https:// e sem caminho. Valor atual: "${config.dominio}"`);
+  } else if (!/^https?:\/\/[^\s/?#]+(\/[A-Za-z0-9._~-]+)*$/i.test(config.dominio.replace(/\/+$/, ""))) {
+    erros.push(`config.js: "dominio" precisa ser o endereço do site, começando com https://, sem "?" nem "#" (uma subpasta é aceita, como no GitHub Pages: "https://usuario.github.io/projeto"). Valor atual: "${config.dominio}"`);
   } else if (/\/$/.test(config.dominio)) {
     avisos.push('config.js: "dominio" termina com barra; ela será ignorada.');
   }
@@ -582,6 +582,29 @@ function ordenarProdutos(produtos) {
     .map((x) => x.p);
 }
 
+// ---------- subpasta (GitHub Pages) ----------
+
+// "https://usuario.github.io/projeto" -> "/projeto"; "https://loja.com.br" -> "".
+function caminhoBase(dominio) {
+  try {
+    return new URL(String(dominio)).pathname.replace(/\/+$/, "");
+  } catch (erro) {
+    return "";
+  }
+}
+
+// Com o site numa subpasta, os endereços internos que começam na raiz ("/img/...", "/p/...",
+// "/trocas/", "/?busca=...", "/#colecao", "/") ganham a subpasta: nos atributos, nos dados
+// embutidos (window.PECAS) e em cada item de srcset. Endereços completos (https://) não mudam.
+const MARCA_BASE = "@@BASE@@";
+function aplicarBase(html, base) {
+  if (!base) return html;
+  let saida = html.replace(/(["'])\/(?=["'?#]|img\/|p\/|css\/|js\/|trocas\/|favicon)/g, "$1" + MARCA_BASE + "/");
+  saida = saida.replace(/(\b(?:srcset|imagesrcset|data-srcset)=")([^"]*)"/g, (tudo, abre, valor) =>
+    abre + valor.split(",").map((item) => item.replace(/^(\s*)\/(?!\/)/, "$1" + MARCA_BASE + "/")).join(",") + '"');
+  return saida.split(MARCA_BASE).join(base);
+}
+
 // ---------- gravação e cópia ----------
 
 function gravar(relativo, conteudo) {
@@ -671,6 +694,12 @@ function main() {
     falhar([erro.message]);
   }
 
+  // No GitHub Pages o endereço vem da automação (.github/workflows/pages.yml), já com a subpasta.
+  if (ehObjeto(config) && ehTexto(process.env.SITE_DOMINIO)) {
+    config.dominio = process.env.SITE_DOMINIO.trim().replace(/\/+$/, "");
+    console.log(`  endereço do site (SITE_DOMINIO): ${config.dominio}`);
+  }
+
   // 2. validar
   const erros = [];
   const avisos = [];
@@ -712,7 +741,8 @@ function main() {
   }
 
   // 5. renderizar
-  const ctx = { config, conteudo, produtos: lista, util, imagens: mapaImagens };
+  const base = caminhoBase(config.dominio);
+  const ctx = { config, conteudo, produtos: lista, util, imagens: mapaImagens, base };
   const nomeFavicon = gerarFavicon(config);
   ctx.favicon = "/" + nomeFavicon;
 
@@ -725,7 +755,7 @@ function main() {
       falhar([`Erro ao renderizar ${rotulo}: ${erro.stack || erro.message}`]);
     }
     if (typeof html !== "string" || !html.trim()) falhar([`O renderizador de ${rotulo} não devolveu HTML (string).`]);
-    paginas.push({ rotulo, relativo, bytes: gravar(relativo, html) });
+    paginas.push({ rotulo, relativo, bytes: gravar(relativo, aplicarBase(html, base)) });
   }
 
   renderizar("home", "index.html", () => renderHome(ctx));

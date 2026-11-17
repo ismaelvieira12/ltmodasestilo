@@ -1017,6 +1017,7 @@ function layout({ ctx, titulo, descricao, caminho, ogImagem, corpo, jsonLd, clas
     .join("");
 
   const configCliente = {
+    base: ctx.base || "",
     whatsapp: config.whatsapp,
     mensagemGeral: config.mensagemGeral,
     mensagemProduto: config.mensagemProduto,
