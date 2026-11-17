@@ -12,7 +12,7 @@ const imagens = require("./imagens.js");
 
 const { ROTULOS, ICONES } = layout;
 const {
-  botaoWhats, linkWhats, cartao, corDaPeca, tabela, segmentos, imagem, infoImagem, altFoto,
+  botaoWhats, linkWhats, cartao, tabela, segmentos, imagem, infoImagem, altFoto,
   fotoMaisAlta, precoCurto, textoComMarca, arrobaInstagram, nenhumPreco, imagemAmbiente,
   categoriasDasPecas, hrefCategoria, temVideos
 } = layout.componentes;
@@ -104,8 +104,7 @@ function secaoHero(ctx) {
       <h1 id="hero-titulo">${textoComMarca(ctx, h.titulo)}</h1>
       <p class="hero-frase">${textoComMarca(ctx, h.subtitulo)}</p>
       <div class="hero-acoes">
-        <a class="btn btn--tinta" href="#colecao">${e(cta)}${ICONES.seta(18)}</a>${temVideos(ctx) ? `
-        <a class="link-play" href="#videos"><span class="link-play-circulo" aria-hidden="true">${ICONES.playFill(14)}</span>${ROTULOS.verVideos}</a>` : ""}
+        <a class="btn btn--tinta" href="#colecao">${e(cta)}${ICONES.seta(18)}</a>
       </div>
     </div>
   </div>
@@ -228,7 +227,8 @@ function secaoMosaico(ctx) {
 // ---------- 4.4 Vídeos (faixa de stories) ----------
 // O vídeo só recebe src pelo app.js quando o card é o mais visível (e, no celular, só depois
 // do primeiro gesto na faixa); antes disso fica a foto com um play discreto.
-// O link leva ao vídeo da peça (#video), não à foto.
+// Sem botões: no celular a faixa rola com o dedo; no computador, com a barra fina embaixo dela
+// (ou o trackpad). O link leva ao vídeo da peça (#video), não à foto.
 function cardVideo(ctx, p) {
   const e = ctx.util.escapeHtml;
   const src = "/" + p.video.replace(/^\/+/, "");
@@ -241,8 +241,7 @@ function cardVideo(ctx, p) {
             <span class="video-card-play" aria-hidden="true">${ICONES.playFill(14)}</span>
           </span>
           <span class="video-card-progresso" aria-hidden="true"><span data-video-progresso></span></span>
-          <span class="video-card-nome">${e(p.nome)}</span>
-          ${corDaPeca(ctx, p, "video-card-cor", "span")}${preco ? `
+          <span class="video-card-nome">${e(p.nome)}</span>${preco ? `
           ${preco}` : ""}
         </a>
       </li>`;
@@ -251,17 +250,9 @@ function cardVideo(ctx, p) {
 function secaoVideos(ctx) {
   const comVideo = ctx.produtos.filter((p) => ehTexto(p.video));
   if (!comVideo.length) return "";
-  const controles = `<div class="videos-controles">
-        <button type="button" class="btn btn--secundario btn--compacto videos-alternar" data-videos-alternar data-estado="tocando" hidden>${ICONES.pause(18, ' class="icone-pausar"')}${ICONES.play(18, ' class="icone-tocar"')}<span data-videos-rotulo>Pausar vídeos</span></button>
-        <button type="button" class="btn btn--secundario btn--icone videos-seta" data-videos-anterior aria-label="Vídeos anteriores" hidden>${ICONES.setaEsquerda(20)}</button>
-        <button type="button" class="btn btn--secundario btn--icone videos-seta" data-videos-proximo aria-label="Próximos vídeos" hidden>${ICONES.setaDireita(20)}</button>
-      </div>`;
   return `<section class="secao videos" id="videos" aria-labelledby="videos-titulo">
   <div class="container">
-    <div class="cabeca-centro">
-      <h2 id="videos-titulo">Peças em vídeo</h2>
-      ${controles}
-    </div>
+    <h2 id="videos-titulo" class="titulo-centro">Peças em vídeo</h2>
     <ul class="videos-faixa" data-videos>
 ${comVideo.map((p) => cardVideo(ctx, p)).join("\n")}
     </ul>

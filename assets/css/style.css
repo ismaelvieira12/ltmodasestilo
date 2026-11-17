@@ -885,39 +885,8 @@ body.barra-visivel .topo-whats-icone {
   margin-top: var(--esp-5);
 }
 
-/* "Ver vídeos" com o play num círculo, ao lado do botão. */
-.link-play {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--esp-3);
-  min-height: 44px;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--cor-tinta);
-  text-decoration: none;
-}
-.link-play-circulo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  padding-left: 2px;
-  border: 1px solid var(--cor-tinta);
-  border-radius: 50%;
-  transition: background-color 150ms ease-out, color 150ms ease-out, transform 200ms var(--suave);
-}
-.link-play:hover .link-play-circulo {
-  background: var(--cor-tinta);
-  color: var(--cor-fundo);
-  transform: scale(1.06);
-}
-
-/* Celular em pé: só o botão principal (o "Ver vídeos" quebraria a linha e desceria sobre a
-   modelo). Em telas baixas (iPhone SE), sem o rótulo e com o título menor. */
-@media (orientation: portrait) and (max-width: 639px) {
-  .hero .link-play { display: none; }
-}
+/* Telas em pé e baixas (iPhone SE): sem o rótulo e com o título menor, para o botão caber
+   acima da cabeça da modelo. */
 @media (orientation: portrait) and (max-height: 700px) {
   .hero-conteudo { padding-top: calc(var(--topo-altura) + var(--esp-3)); }
   .hero .rotulo { display: none; }
@@ -1239,34 +1208,10 @@ body.barra-visivel .topo-whats-icone {
 
 /* ---------- 7b. Vídeos (faixa horizontal de cards 9:16, formato dos stories) ---------- */
 
-/* Cabeçalho centrado (vídeos): título no meio. Celular: os controles embaixo dele, centrados.
-   Desktop: na mesma linha, encostados à direita, sem tirar o título do centro. */
-.cabeca-centro {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--esp-3);
-  margin-bottom: var(--h2-para-conteudo);
-  text-align: center;
-}
-@media (min-width: 1024px) {
-  .cabeca-centro {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    align-items: center;
-  }
-  .cabeca-centro h2 { grid-column: 2; }
-  .cabeca-centro .videos-controles { grid-column: 3; justify-self: end; }
-}
-
-.videos-controles {
-  display: flex;
-  gap: var(--esp-2);
-}
-.videos-alternar .icone-tocar,
-.videos-alternar[data-estado="pausado"] .icone-pausar { display: none; }
-.videos-alternar[data-estado="pausado"] .icone-tocar { display: block; }
-.videos-seta { display: none; }
+/* Título centrado, sem botões. A faixa rola com o dedo no celular; no computador, com uma
+   barra fina embaixo dela (arrastável com o mouse) ou com o trackpad. */
+.titulo-centro { text-align: center; }
+.secao > .container > .titulo-centro { margin-bottom: var(--h2-para-conteudo); }
 
 .videos-faixa {
   list-style: none;
@@ -1358,14 +1303,6 @@ body.barra-visivel .topo-whats-icone {
   font-weight: 500;
   line-height: 1.35;
 }
-.video-card-cor {
-  display: block;
-  margin-top: 2px;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.4;
-  color: var(--cor-tinta-suave);
-}
 .video-card-preco {
   display: block;
   margin-top: 2px;
@@ -1385,14 +1322,6 @@ body.barra-visivel .topo-whats-icone {
   font-weight: 500;
 }
 
-@media (hover: hover) {
-  .video-card-link:hover .video-card-nome {
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 3px;
-  }
-}
-
 @media (min-width: 1024px) {
   .videos-faixa {
     gap: var(--esp-4);
@@ -1401,19 +1330,31 @@ body.barra-visivel .topo-whats-icone {
     scroll-padding-left: 0;
   }
   .video-card { flex-basis: 216px; }
-  .video-card-nome { font-size: 15px; }
+  .video-card-nome { font-size: 14px; }
 }
+/* Computador com mouse: a barra de rolagem volta, fina, para dar para arrastar a faixa. */
 @media (min-width: 1024px) and (hover: hover) {
-  .videos-seta { display: inline-flex; }
+  .videos-faixa {
+    padding-bottom: var(--esp-5);
+    scrollbar-width: thin;
+    scrollbar-color: var(--cor-tinta) var(--cor-linha);
+  }
+  .videos-faixa::-webkit-scrollbar { display: block; height: 4px; }
+  .videos-faixa::-webkit-scrollbar-track { background: var(--cor-linha); }
+  .videos-faixa::-webkit-scrollbar-thumb { background: var(--cor-tinta); border-radius: 2px; }
 }
 
 /* ---------- 8. Card de peça, favoritos, coleção, filtros e busca ---------- */
 
-/* Card: um link só (foto 3:4 sobre bege claro, nome, cor e preço) e o coração no canto da foto,
-   ao lado do link (nunca dentro). Sem caixa nem sombra: a foto é o card. */
+/* Card (referências AERIS e LUMEN): um link só (foto 3:4 sobre cinza claro, nome e preço) e o
+   coração ao lado do link (nunca dentro), na linha do nome, à direita. Sem caixa, sem sombra,
+   sem cor da peça e sem sublinhado: no hover a foto troca pela segunda (ou aproxima um pouco).
+   O card é um contêiner de consulta: a largura dele (100cqw) dá a altura da foto, e com ela o
+   coração se alinha ao nome. Sem suporte a cqw, o coração fica no canto da foto, num círculo. */
 .cartao {
   position: relative;
   height: 100%;
+  container-type: inline-size;
 }
 .cartao-link {
   display: flex;
@@ -1444,15 +1385,28 @@ body.barra-visivel .topo-whats-icone {
 @media (hover: hover) {
   .cartao-link:hover .cartao-foto--dupla .cartao-foto-2.carregada { opacity: 1; }
   .cartao-link:hover .cartao-foto:not(.cartao-foto--dupla) img { transform: scale(1.03); }
-  .cartao-link:hover .cartao-nome {
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 3px;
-  }
 }
 
-/* Selos sobre a foto: pequenos, sólidos. "Vídeo" em creme com texto tinta (informativo);
-   a tag da peça ("Novo") em tinta com texto creme. Nenhum em verde. */
+/* Peça com vídeo: só um play pequeno num círculo branco, no canto de baixo da foto (o texto
+   "Com vídeo" fica para o leitor de tela). */
+.selo-video {
+  position: absolute;
+  left: var(--esp-2);
+  bottom: var(--esp-2);
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding-left: 2px;
+  border-radius: 50%;
+  background: var(--cor-cartao);
+  color: var(--cor-tinta);
+  pointer-events: none;
+}
+
+/* Tag da peça ("Novo"), quando houver: pequena, sólida, em tinta. Nunca em verde. */
 .selo {
   position: absolute;
   z-index: 1;
@@ -1466,12 +1420,6 @@ body.barra-visivel .topo-whats-icone {
   line-height: 1;
   pointer-events: none;
 }
-.selo--video {
-  left: var(--esp-2);
-  bottom: var(--esp-2);
-  background: var(--cor-cartao);
-  color: var(--cor-tinta);
-}
 .selo--tag {
   left: var(--esp-2);
   top: var(--esp-2);
@@ -1479,20 +1427,25 @@ body.barra-visivel .topo-whats-icone {
   color: var(--cor-fundo);
 }
 
+/* Nome: duas linhas no máximo, com espaço à direita para o coração. */
 .cartao-nome {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
   margin-top: var(--esp-3);
-  font-size: 14px;
+  padding-right: 34px;
+  font-size: 13.5px;
   font-weight: 500;
-  line-height: 1.35;
+  line-height: 1.4;
+  transition: color 150ms ease-out;
 }
-/* Cor: bolinha com a cor medida na foto (corHex) e o nome da cor. Anel em borda para cores claras. */
-.cartao-cor,
-.compra-cor,
-.video-card-cor {
+@media (hover: hover) {
+  .cartao-link:hover .cartao-nome { color: var(--cor-tinta-suave); }
+}
+/* Cor da peça (só na página da peça): bolinha com a cor medida na foto (corHex) e o nome da
+   cor. Anel em borda para cores claras. */
+.compra-cor {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1571,6 +1524,16 @@ body.barra-visivel .topo-whats-icone {
   transition: transform 200ms var(--suave);
 }
 .favorito--cartao:hover::before { transform: scale(1.08); }
+/* Com cqw: o coração desce para a linha do nome (logo abaixo da foto 3:4), sem o círculo.
+   O botão continua com 44px de toque; a margem negativa alinha o desenho com a borda do card. */
+@supports (top: 1cqw) {
+  .favorito--cartao {
+    top: calc(100cqw * 4 / 3);
+    right: -12px;
+  }
+  .favorito--cartao::before { display: none; }
+  .favorito--cartao:hover svg { transform: scale(1.1); }
+}
 html:not(.js) .favorito,
 html:not(.js) .topo-favoritos { display: none; }
 
@@ -1712,7 +1675,7 @@ html:not(.js) [data-mostrar-mais] { display: none; }
   }
   .grade { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 56px var(--esp-6); }
   .grade--quatro { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .cartao-nome { font-size: 15px; }
+  .cartao-nome { font-size: 14px; }
 
   .pagina-home .colecao-cabeca {
     flex-direction: column;
@@ -1730,8 +1693,7 @@ html:not(.js) [data-mostrar-mais] { display: none; }
 /* Computador largo: uma linha de 6 peças, cards menores (como as Novidades da referência). */
 @media (min-width: 1280px) {
   .grade--colecao { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 40px var(--esp-4); }
-  .grade--colecao .cartao-nome { margin-top: var(--esp-2); font-size: 13.5px; }
-  .grade--colecao .cartao-cor { font-size: 12.5px; }
+  .grade--colecao .cartao-nome { font-size: 13.5px; }
 }
 
 /* ---------- 9. Sobre (texto à esquerda, retrato 4:5 à direita) ---------- */

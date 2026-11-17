@@ -859,9 +859,10 @@ document.documentElement.classList.add("js", "app");
   // ---------- 14. Faixa de vídeos da home: só o card mais visível toca, mudo ----------
   // O vídeo recebe src só quando o card vira o escolhido (nada é baixado antes).
   // Em tela de toque (sem hover ou ponteiro grosso), nada toca só por rolar a página: a faixa
-  // espera o primeiro gesto dentro dela (rolagem horizontal, toque ou "Tocar vídeos").
+  // espera o primeiro gesto dentro dela (rolagem horizontal ou toque).
   // Antes disso ficam as fotos com um play discreto. No desktop, toca o card mais visível
-  // e o card sob o ponteiro tem prioridade. O botão pausa ou retoma a faixa.
+  // e o card sob o ponteiro tem prioridade. Só um vídeo toca por vez, mudo, e nunca com
+  // movimento reduzido ou economia de dados (autoplayLiberado).
   var telaDeToque = Boolean(window.matchMedia && window.matchMedia("(hover: none), (pointer: coarse)").matches);
 
   function iniciarFaixaVideos(faixa) {
@@ -869,8 +870,6 @@ document.documentElement.classList.add("js", "app");
     var razoes = cards.map(function () { return 0; });
     var liberado = autoplayLiberado && !telaDeToque;
     var preferido = -1;
-    var alternar = document.querySelector("[data-videos-alternar]");
-    var rotuloAlternar = alternar ? alternar.querySelector("[data-videos-rotulo]") : null;
 
     function videoDo(card) { return card.querySelector("video"); }
 
@@ -944,29 +943,11 @@ document.documentElement.classList.add("js", "app");
     }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
     cards.forEach(function (card) { observador.observe(card); });
 
-    function atualizarAlternar() {
-      if (!alternar) return;
-      alternar.hidden = false;
-      alternar.setAttribute("data-estado", liberado ? "tocando" : "pausado");
-      if (rotuloAlternar) rotuloAlternar.textContent = liberado ? "Pausar vídeos" : "Tocar vídeos";
-    }
-    if (alternar) {
-      alternar.addEventListener("click", function () {
-        liberado = !liberado;
-        atualizarAlternar();
-        escolher();
-      });
-    }
-    atualizarAlternar();
-
     if (telaDeToque && autoplayLiberado) esperarGesto(faixa, cards, function () {
       if (liberado) return;
       liberado = true;
-      atualizarAlternar();
       escolher();
     });
-
-    ligarSetas(faixa, cards, document.querySelector("[data-videos-anterior]"), document.querySelector("[data-videos-proximo]"));
   }
 
   // Primeiro gesto dentro da faixa, sem listener de scroll:
@@ -997,8 +978,8 @@ document.documentElement.classList.add("js", "app");
     }, { passive: true });
   }
 
-  // Setas do desktop (faixa de vídeos e vitrines): rolam a faixa e ficam desativadas quando a
-  // ponta já está à vista. O CSS só as mostra com mouse e a partir de 1024px.
+  // Setas do desktop (vitrine "Você também pode gostar"): rolam a faixa e ficam desativadas
+  // quando a ponta já está à vista. O CSS só as mostra com mouse e a partir de 1024px.
   function ligarSetas(faixa, cards, anterior, proximo) {
     if (!anterior || !proximo || cards.length < 2) return;
     anterior.hidden = false;

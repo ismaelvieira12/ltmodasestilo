@@ -524,11 +524,12 @@ function botaoFavorito(ctx, p, classe = "") {
   return `<button type="button" class="favorito${classe ? " " + classe : ""}" data-favorito="${e(p.slug)}" aria-pressed="false" aria-label="${ROTULOS.salvar}: ${e(p.nome)}">${ICONES.coracao(20, ' class="icone-vazio"')}${ICONES.coracaoCheio(20, ' class="icone-cheio"')}</button>`;
 }
 
-// Card de peça (seção 3.9 do DESIGN.md), usado na coleção, nas relacionadas e na 404.
-// Um link só (foto, nome, cor e preço) e, ao lado dele (nunca dentro), o coração de favoritos
-// no canto da foto. A foto tem alt vazio (o nome está no mesmo link). A segunda foto (troca
-// no hover) sai adiada: o app.js só a carrega em aparelho com hover, no primeiro pointerenter.
-// Selos sobre a foto: "Vídeo" (quando a peça tem vídeo) e a tag da peça, se houver.
+// Card de peça (seção 0 do DESIGN.md), usado na coleção, nas relacionadas e na 404.
+// Um link só (foto, nome e preço) e, ao lado dele (nunca dentro), o coração de favoritos,
+// que o CSS põe na linha do nome, à direita. A foto tem alt vazio (o nome está no mesmo link).
+// A segunda foto (troca no hover) sai adiada: o app.js só a carrega em aparelho com hover,
+// no primeiro pointerenter. Sobre a foto: o play discreto (peça com vídeo) e a tag, se houver.
+// A cor não aparece no card (fica na página da peça), mas continua valendo na busca.
 function cartao(ctx, p, opts = {}) {
   const { config, util } = ctx;
   const e = util.escapeHtml;
@@ -553,10 +554,9 @@ function cartao(ctx, p, opts = {}) {
         ${imagem(ctx, p.fotos[0], { sizes, carregamento: opts.lazy === false ? "normal" : "lazy" })}${foto2 ? `
         ${imagem(ctx, foto2, { sizes, classe: "cartao-foto-2", fade: false, carregamento: "adiado" })}` : ""}${ehTexto(p.tag) ? `
         <span class="selo selo--tag">${e(p.tag)}</span>` : ""}${ehTexto(p.video) ? `
-        <span class="selo selo--video">${ICONES.playFill(10)}Vídeo</span>` : ""}
+        <span class="selo-video">${ICONES.playFill(10)}<span class="vo">Com vídeo</span></span>` : ""}
       </span>
-      <span class="cartao-nome">${e(p.nome)}</span>
-      ${corDaPeca(ctx, p, "cartao-cor", "span")}${preco ? `
+      <span class="cartao-nome">${e(p.nome)}</span>${preco ? `
       ${preco}` : ""}${pix !== null ? `
       <span class="cartao-pix">${e(util.formatarPreco(pix))} no PIX</span>` : ""}
     </a>
