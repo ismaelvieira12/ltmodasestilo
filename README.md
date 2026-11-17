@@ -23,10 +23,11 @@ O que não precisa mexer:
 src/                 modelos das páginas
 assets/              visual (css) e comportamento (js)
 scripts/             programa que gera as miniaturas das fotos (npm run fotos)
-img/640/, img/828/   versões menores das fotos, geradas automaticamente. Não edite
+img/640/, 828/, 1280/  versões menores das fotos, geradas automaticamente. Não edite
 build.js             o programa que monta o site a partir dos seus dados
 package.json         atalhos dos comandos
-vercel.json          instruções para a hospedagem
+vercel.json          instruções para a Vercel (hospedagem alternativa; a Cloudflare usa o Passo 6)
+.github/             publicação automática no GitHub Pages
 DESIGN.md            direção visual, para quem for mexer no design
 dist/                site pronto, gerado automaticamente. Não edite: é apagado e refeito a cada build
 ```
@@ -51,7 +52,7 @@ Abra `dados/config.js` e preencha campo a campo. Tudo que ficar `""` (vazio) usa
 
 - `marca`: nome da marca. Aparece no topo, no rodapé, na aba do navegador e quando o link é compartilhado. Obrigatório.
 - `slogan`: frase curta, opcional. Aparece no rodapé e na descrição do link compartilhado.
-- `dominio`: endereço do site publicado, começando com `https://` e sem barra no final. Ex: `"https://ltmodasestilo.com.br"`. Enquanto não tiver domínio próprio, use o endereço que a Vercel der (ex: `"https://ltmodasestilo.vercel.app"`). É usado nos links compartilhados, no sitemap e nos dados para o Google. Obrigatório.
+- `dominio`: endereço do site publicado, começando com `https://` e sem barra no final. Ex: `"https://ltmodasestilo.com.br"`. Enquanto não tiver domínio próprio, use o endereço que a Cloudflare Pages der (hoje `"https://ltmodasestilo.pages.dev"`). É usado nos links compartilhados, no link da peça que vai na mensagem do WhatsApp, no sitemap e nos dados para o Google. Obrigatório.
 - `whatsapp`: o número que recebe os pedidos, só dígitos, no formato 55 + DDD + número. Ex: `"5511999998888"` (13 dígitos com o nono dígito, 12 sem). Sem espaço, parênteses, traço ou "+". O build recusa qualquer outro formato.
 - `instagram`: seu usuário sem o @. Ex: `"ltmodasestilo"`.
 - `email`, `cnpj`, `cidade`: opcionais, aparecem no rodapé. Deixe `""` para não mostrar.
@@ -95,7 +96,7 @@ Exemplo do que chega no seu WhatsApp com a mensagem padrão, peça "Conjunto Cro
 
 ```
 Olá! Tenho interesse na peça Conjunto Cropped e Short com Faixa, cor Azul royal, tamanho M (R$ 159,90). Ainda tem disponível?
-https://ltmodasestilo.vercel.app/p/conjunto-cropped-short-faixa-azul/
+https://ltmodasestilo.pages.dev/p/conjunto-cropped-short-faixa-azul/
 ```
 
 **Outros campos opcionais do rodapé** (acrescente a linha se quiser usar): `horario: "Atendimento de segunda a sexta, das 9h às 18h",` mostra uma linha de horário; `politicaPrivacidade: "https://..."` mostra um link "Política de privacidade" apontando para uma página que você já tenha. O site não gera essa página.
@@ -240,21 +241,25 @@ Mensagens que começam com "Não foi possível carregar produtos.js" (ou config.
 
 ---
 
-## Passo 6: publicar na Vercel
+## Passo 6: publicar na Cloudflare Pages
 
-A hospedagem é na Vercel, que tem plano gratuito suficiente para este site. As configurações já estão no `vercel.json` (rodar `npm run build` e publicar a pasta `dist`): você não precisa mexer em nada nas telas da Vercel.
+A hospedagem principal é a Cloudflare Pages, que é grátis e deixa o site em `https://ltmodasestilo.pages.dev`. Ela fica ligada ao repositório do GitHub (`https://github.com/ismaelvieira12/ltmodasestilo`): depois de configurar uma vez, cada `git push` publica o site sozinho.
 
 Antes de publicar, confira o número de `whatsapp` no `config.js`: com o número de exemplo, quem tocar nos botões manda mensagem para um desconhecido.
 
-**Caminho recomendado: pela conta do GitHub.** O projeto já está em `https://github.com/ismaelvieira12/ltmodasestilo`. Você liga a Vercel ao repositório uma vez e, daqui para frente, cada `git push` publica o site sozinho (na Vercel e no GitHub Pages).
-
-1. Abra https://vercel.com/signup e crie a conta com **Continue with GitHub**, entrando como `ismaelvieira12`. Se já tiver conta na Vercel, entre nela. Use a sua conta: a Vercel que aparece conectada dentro do Claude não é sua.
-2. No painel da Vercel, clique em **Add New...** e depois em **Project**.
-3. Em **Import Git Repository**, procure `ltmodasestilo`. Se o repositório não aparecer, clique no link para ajustar as permissões do GitHub, escolha a conta `ismaelvieira12`, marque o repositório `ltmodasestilo` e salve.
-4. Clique em **Import** ao lado de `ltmodasestilo`.
-5. Na tela **Configure Project**: deixe o nome `ltmodasestilo`, deixe **Framework Preset** em "Other" e não mexa em **Build and Output Settings** nem em **Environment Variables**. Clique em **Deploy**.
-6. Espere um ou dois minutos, até aparecer a tela de parabéns. O endereço do site aparece em **Domains**, algo como `https://ltmodasestilo.vercel.app`. É esse o link para compartilhar e para os anúncios. Os links de "pré-visualização" que a Vercel às vezes mostra pedem login para abrir; use sempre o endereço de **Domains**.
-7. Se o endereço for diferente de `https://ltmodasestilo.vercel.app` (acontece quando o nome já existe na Vercel), copie o endereço para `dominio` no `config.js`, sem barra no final, e envie a mudança com os 3 comandos abaixo. Isso é importante: o link da peça que vai na mensagem do WhatsApp, o sitemap e a prévia ao compartilhar usam esse endereço.
+1. Abra https://dash.cloudflare.com/sign-up e crie a sua conta (ou entre, se já tiver).
+2. No menu da esquerda, abra **Workers & Pages** (em algumas contas fica dentro de **Compute**) e clique em **Create application**.
+3. Escolha a aba **Pages** e depois **Import an existing Git repository** (às vezes aparece como **Connect to Git**).
+4. Clique em **Connect GitHub**, entre como `ismaelvieira12` e autorize a Cloudflare a ver o repositório `ltmodasestilo`. De volta à Cloudflare, escolha `ltmodasestilo` e clique em **Begin setup**.
+5. Na tela **Set up builds and deployments**, preencha assim:
+   - **Project name**: `ltmodasestilo` (é o que vira o endereço `ltmodasestilo.pages.dev`)
+   - **Production branch**: `main`
+   - **Framework preset**: `None`
+   - **Build command**: `npm run build`
+   - **Build output directory**: `dist`
+   - **Environment variables**: não precisa de nenhuma.
+6. Clique em **Save and Deploy** e espere um ou dois minutos, até a publicação aparecer como concluída. O endereço do site aparece no topo do projeto.
+7. Se o endereço for diferente de `https://ltmodasestilo.pages.dev` (acontece quando o nome já existe na Cloudflare), copie o endereço para `dominio` no `config.js`, sem barra no final, e envie a mudança com os 3 comandos abaixo. Isso é importante: o link da peça que vai na mensagem do WhatsApp, o sitemap e a prévia ao compartilhar usam esse endereço.
 8. A cada mudança (peça nova, preço, foto, texto), rode `npm run dev` para testar e depois envie, um comando de cada vez:
 
 ```bash
@@ -269,35 +274,13 @@ git commit -m "Descreva a mudança"
 git push
 ```
 
-   A Vercel roda o build sozinha a cada envio. Se o build falhar lá, a publicação não acontece e a versão anterior continua no ar; no painel da Vercel, a publicação com erro aparece em vermelho, com a mensagem.
+   A Cloudflare roda o build sozinha a cada envio. Se o build falhar lá, a publicação não acontece e a versão anterior continua no ar; no projeto, em **Deployments**, a publicação com erro aparece com a mensagem do problema.
 
-**Outro caminho: pelo terminal, sem passar pelo GitHub.**
+Os commits desta pasta saem assinados como `ismaelvieira12` (configurado só neste projeto, em `.git/config`). Assim a Cloudflare, a Vercel e o GitHub reconhecem você como autor.
 
-1. Crie uma conta em https://vercel.com (pode entrar com conta do Google ou do GitHub).
-2. Na pasta do projeto, conecte o computador à sua conta (só na primeira vez):
+**Outro caminho: Vercel.** O projeto também está pronto para a Vercel (o `vercel.json` já diz o que fazer) e já existe na sua conta de lá, em `https://ltmodasestilo.vercel.app`. Enquanto ele estiver ligado ao GitHub, a Vercel também publica a cada `git push`, com os links apontando para o endereço do `dominio` (hoje o da Cloudflare). Se não for mais usar a Vercel, desligue o projeto de lá: no projeto, **Settings > Git > Disconnect**, ou apague o projeto em **Settings > General**. Se um dia quiser voltar a ela como site principal, troque o `dominio` para `"https://ltmodasestilo.vercel.app"`. Para publicar na Vercel pelo terminal, sem o GitHub, rode `npx vercel login` (só na primeira vez) e `npx vercel --prod`; a pasta `.vercel/` que esses comandos criam fica fora do GitHub.
 
-```bash
-npx vercel login
-```
-
-   Ele pergunta como entrar (escolha com as setas e Enter, por exemplo "Continue with Google") e abre o navegador. Entre na sua conta e confirme. No terminal aparece uma mensagem de sucesso.
-3. Publique no endereço definitivo:
-
-```bash
-npx vercel --prod
-```
-
-   Na primeira vez ele faz algumas perguntas. Responda assim:
-   - "Set up and deploy?": Enter (sim).
-   - "Which scope?": escolha a sua conta e Enter.
-   - "Link to existing project?": n e Enter (não). Se você já criou o projeto pelo caminho do GitHub, responda y e escolha `ltmodasestilo`.
-   - "What's your project's name?": `ltmodasestilo` e Enter.
-   - "In which directory is your code located?": Enter (a pasta atual).
-   - "Want to modify these settings?": n e Enter.
-4. No fim ele mostra o endereço do site. Se for diferente de `https://ltmodasestilo.vercel.app`, faça como no item 7 acima e rode `npx vercel --prod` de novo.
-5. Por esse caminho, cada mudança é publicada com `npx vercel --prod`. O arquivo `.vercelignore` faz a Vercel não receber as pastas `dist/` e `referencias/`, e a pasta `.vercel/` que o comando cria fica fora do GitHub (está no `.gitignore`).
-
-**Publicar pelo GitHub Pages (grátis, direto do repositório).** O site fica em `https://ismaelvieira12.github.io/ltmodasestilo/`. O arquivo `.github/workflows/pages.yml` faz o GitHub gerar e publicar o site sozinho a cada `git push`, já com o endereço certo (a subpasta `/ltmodasestilo` é ajustada automaticamente; o `dominio` do `config.js` continua valendo para o computador e para a Vercel).
+**Publicar pelo GitHub Pages (grátis, direto do repositório).** O site fica em `https://ismaelvieira12.github.io/ltmodasestilo/`. O arquivo `.github/workflows/pages.yml` faz o GitHub gerar e publicar o site sozinho a cada `git push`, já com o endereço certo (a subpasta `/ltmodasestilo` é ajustada automaticamente; o `dominio` do `config.js` continua valendo para o computador, a Cloudflare e a Vercel).
 
 1. No GitHub, abra o repositório e vá em Settings > Pages. Em "Build and deployment", no campo "Source", troque "Deploy from a branch" por **GitHub Actions**. Só o dono do repositório (conta `ismaelvieira12`) consegue mudar isso. No plano gratuito do GitHub, o repositório precisa ser público para usar o Pages (ele já é).
    Se o endereço mostra o texto deste README em vez do catálogo, é porque o "Source" ainda está em "Deploy from a branch": nesse modo o GitHub publica os arquivos do repositório como estão, e o site pronto (pasta `dist/`) nem é enviado.
@@ -308,9 +291,9 @@ npx vercel --prod
 Domínio próprio (recomendado para anúncios, porque o endereço aparece no anúncio e passa mais confiança):
 
 1. Registre um domínio. Para `.com.br`, o registro é feito em https://registro.br.
-2. Na Vercel, abra o projeto, vá em Settings > Domains, adicione o domínio e siga as instruções de DNS que a tela mostra (você configura isso no painel do registro.br). Pode levar algumas horas para propagar.
+2. Na Cloudflare, abra o projeto `ltmodasestilo` em Workers & Pages, vá em **Custom domains** e clique em **Set up a custom domain**. Digite o domínio e siga o que a tela mostra. Para usar o domínio sem "www" (ex: `ltmodasestilo.com.br`), a Cloudflare pede para trocar os servidores DNS no painel do registro.br pelos que ela mostrar. Pode levar algumas horas para propagar.
 3. O HTTPS é automático.
-4. Troque `dominio` no `config.js` para o endereço novo (ex: `"https://ltmodasestilo.com.br"`) e publique de novo: com `git push`, se a Vercel está ligada ao GitHub, ou com `npx vercel --prod`, se você publica pelo terminal.
+4. Troque `dominio` no `config.js` para o endereço novo (ex: `"https://ltmodasestilo.com.br"`) e publique de novo com `git push`.
 
 ---
 
@@ -321,7 +304,7 @@ O pixel é o que permite à Meta saber quem visitou o site e quem clicou no What
 1. Acesse o Gerenciador de Eventos: https://business.facebook.com/events_manager
 2. Clique em Conectar dados, escolha Web e siga até criar o pixel (conjunto de dados). Copie o ID, que é só números.
 3. Cole o ID em `pixelId` no `config.js`, entre aspas. Ex: `pixelId: "123456789012345",`.
-4. Rode `npm run build` para conferir que passou e publique com `npx vercel --prod`.
+4. Rode `npm run build` para conferir que passou e publique com `git add .`, `git commit -m "Pixel da Meta"` e `git push`.
 5. Confira com a extensão Meta Pixel Helper no Chrome (gratuita, da própria Meta). Abra o site publicado: deve aparecer `PageView`. Abra uma peça: deve aparecer também `ViewContent`. Clique em um botão de WhatsApp: deve aparecer `Contact`. Os mesmos eventos aparecem em "Testar eventos" no Gerenciador de Eventos.
 
 Eventos que o site já dispara, sem precisar configurar nada:
@@ -381,7 +364,7 @@ A venda fecha no WhatsApp, então a página só faz metade do trabalho.
 - [ ] Depoimentos só reais e autorizados, ou lista vazia. Nenhum depoimento inventado no ar.
 - [ ] Texto do Sobre escrito por você; FAQ, guia de medidas e política de trocas revisados e condizentes com a sua operação.
 - [ ] `npm run build` termina com "Build concluído" e sem linhas "Aviso:".
-- [ ] Site publicado com `npx vercel --prod`, abrindo em HTTPS, no domínio que vai nos anúncios.
+- [ ] Site publicado (último `git push` aparece como concluído na Cloudflare), abrindo em HTTPS, no domínio que vai nos anúncios.
 - [ ] Teste no seu próprio celular, pelo navegador interno do Instagram (mande o link para você mesma por mensagem direta e toque nele): a página abre rápido, o tamanho escolhido entra na mensagem, o WhatsApp abre com o texto certo.
 - [ ] Pixel colado em `pixelId`, publicado e verificado com o Meta Pixel Helper (`PageView`, `ViewContent`, `Contact`).
 - [ ] Campanha otimizada para o evento `Contact`.

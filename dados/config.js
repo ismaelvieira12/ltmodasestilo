@@ -20,11 +20,13 @@ module.exports = {
   slogan: "",
 
   // Endereço do site publicado, SEM barra no final. Ex: "https://ltmodasestilo.com.br"
-  // Usado nos links compartilhados, no sitemap e nos dados para o Google.
-  // CONFIRA depois de publicar: troque pelo endereço que a Vercel ou o seu domínio mostrar.
+  // Usado nos links compartilhados, no link da peça que vai na mensagem do WhatsApp,
+  // no sitemap e nos dados para o Google.
+  // Hoje o site principal fica na Cloudflare Pages. CONFIRA depois de criar o projeto lá:
+  // se a Cloudflare der outro endereço (acontece quando o nome já existe), troque aqui.
   // No GitHub Pages não precisa mexer: a publicação usa sozinha o endereço do Pages
   // (https://ismaelvieira12.github.io/ltmodasestilo), com a subpasta.
-  dominio: "https://ltmodasestilo.vercel.app",
+  dominio: "https://ltmodasestilo.pages.dev",
 
   // WhatsApp que recebe os pedidos: (85) 99818-4090.
   // Formato: só números, com 55 + DDD + número.
